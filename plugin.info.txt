@@ -1,0 +1,7 @@
+base   authorstats
+author George Chatzisofroniou
+email  sophron@latthi.com
+date   2012-02-04
+name   authorstats plugin
+desc   Plugin that outputs statistics about the wiki's authors.
+url    http://www.dokuwiki.org/plugin:authorstats
