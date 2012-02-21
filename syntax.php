@@ -55,7 +55,7 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin {
         return true;
     }
 
-    function GetStatsTable() {
+    function GetStatsTable() {    //Return the HTML table with the authors and their stats
         $output = "<table id=\"authorstats-table\"><tr><th>Name</th><th>Creates</th><th>Edits</th><th>Minor edits</th><th>Deletes</th><th>Reverts</th></tr>";
         $authors = $this->GetStatsArray();
         foreach ($authors as $author) {
@@ -71,17 +71,17 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin {
         return $output;
     }
 
-    function GetStatsArray() {
+    function GetStatsArray() {    //Returns an multidimensional array with authors and their stats
         $dir = "data/meta/";
         $authors = array();
         if ($dh = opendir($dir)) {
             while (($file = readdir($dh)) !== false) {
-                if (strpos($file,'.changes') !== false && $file != "_dokuwiki.changes") {
+                if (strpos($file,'.changes') !== false && $file != "_dokuwiki.changes") {    //Check the files that stores the wanted data.
                     $f = fopen($dir . $file, "r");
                     while(!feof($f)) {
                         $line = fgets($f);
                         $parts = explode("\t", $line);
-                        if (!isset($authors[$parts[4]])) {
+                        if (!isset($authors[$parts[4]])) {    //If the author is not in the array, initialize his stats
                             $authors[$parts[4]]["name"] = $parts[4];
                             $authors[$parts[4]]["C"] = 0;
                             $authors[$parts[4]]["E"] = 0;
@@ -89,7 +89,7 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin {
                             $authors[$parts[4]]["D"] = 0;
                             $authors[$parts[4]]["R"] = 0;
                         }
-                        $authors[$parts[4]][$parts[2]]++ ;
+                        $authors[$parts[4]][$parts[2]]++;
                     }
                     asort($authors);
                     fclose($f);
