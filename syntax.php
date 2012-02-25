@@ -51,7 +51,7 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin {
 
     public function render($mode, &$renderer, $data) {
         if($mode != 'xhtml') return false;
-        $renderer->doc .= $this->GetStatsTable();
+        $renderer->doc = $this->GetStatsTable();
         return true;
     }
 
@@ -73,14 +73,15 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin {
     }
 
     function GetStatsArray() {    //Returns a multidimensional array with authors and their stats
-        $dir = "data/meta/";
-        $files = $this->GetFiles("data/meta/");
+        global $conf;
+        $dir = $conf['metadir'] . '/';
+        $files = $this->GetFiles($dir);
         $authors = array();
         foreach ($files as $file) {
             $f = fopen($file, "r");
             while(!feof($f)) {
                 $line = fgets($f);
-                $parts = explode("\t", $line);
+                $parts = explode(DOKU_TAB, $line);
                 if (!isset($authors[$parts[4]])) {    //If the author is not in the array, initialize his stats
                     $authors[$parts[4]]["name"] = $parts[4];
                     $authors[$parts[4]]["C"] = 0;
