@@ -1,16 +1,15 @@
-#authorstats-table {
+.authorstats-table {
     border-collapse: collapse;
     border:1px solid #8CACBB;
-
 }
 
-#authorstats-table td {
+.authorstats-table td {
     padding:10px;
     text-align: center;
     border:1px solid #8CACBB;
 }
 
-#authorstats-table th {
+.authorstats-table th {
     background-color: #DEE7EC;
     color: black;
     border: 1px solid #8CACBB;

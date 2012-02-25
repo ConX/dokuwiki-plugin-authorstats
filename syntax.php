@@ -57,7 +57,7 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin {
 
       
     function GetStatsTable() {    //Returns the HTML table with the authors and their stats
-        $output = "<table id=\"authorstats-table\"><tr><th>Name</th><th>Creates</th><th>Edits</th><th>Minor edits</th><th>Deletes</th><th>Reverts</th></tr>";
+        $output = "<table class=\"authorstats-table\"><tr><th>Name</th><th>Creates</th><th>Edits</th><th>Minor edits</th><th>Deletes</th><th>Reverts</th></tr>";
         $authors = $this->GetStatsArray();
         foreach ($authors as $author) {
         if (!empty($author['name'])) $output .= "<tr><td>" . 
