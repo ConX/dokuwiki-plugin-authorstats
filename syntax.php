@@ -51,11 +51,12 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin {
 
     public function render($mode, &$renderer, $data) {
         if($mode != 'xhtml') return false;
-        $renderer->doc = $this->GetStatsTable();
+        $renderer->doc .= $this->GetStatsTable();
         return true;
     }
 
-    function GetStatsTable() {    //Return the HTML table with the authors and their stats
+      
+    function GetStatsTable() {    //Returns the HTML table with the authors and their stats
         $output = "<table id=\"authorstats-table\"><tr><th>Name</th><th>Creates</th><th>Edits</th><th>Minor edits</th><th>Deletes</th><th>Reverts</th></tr>";
         $authors = $this->GetStatsArray();
         foreach ($authors as $author) {
@@ -64,41 +65,51 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin {
                                     $author['C'] . "</td><td>" . 
                                     $author['E'] .  "</td><td>" . 
                                     $author['e'] . "</td><td>" . 
-                                    $author['D'] . "</td><td>" . $author['R'] . 
-                                    "</td></tr>";
+                                    $author['D'] . "</td><td>" . 
+                                    $author['R'] . "</td></tr>";
         }
         $output .= "</table>";
         return $output;
     }
 
-    function GetStatsArray() {    //Returns an multidimensional array with authors and their stats
+    function GetStatsArray() {    //Returns a multidimensional array with authors and their stats
         $dir = "data/meta/";
+        $files = $this->GetFiles("data/meta/");
         $authors = array();
-        if ($dh = opendir($dir)) {
-            while (($file = readdir($dh)) !== false) {
-                if (strpos($file,'.changes') !== false && $file != "_dokuwiki.changes") {    //Check the files that stores the wanted data.
-                    $f = fopen($dir . $file, "r");
-                    while(!feof($f)) {
-                        $line = fgets($f);
-                        $parts = explode("\t", $line);
-                        if (!isset($authors[$parts[4]])) {    //If the author is not in the array, initialize his stats
-                            $authors[$parts[4]]["name"] = $parts[4];
-                            $authors[$parts[4]]["C"] = 0;
-                            $authors[$parts[4]]["E"] = 0;
-                            $authors[$parts[4]]["e"] = 0;
-                            $authors[$parts[4]]["D"] = 0;
-                            $authors[$parts[4]]["R"] = 0;
-                        }
-                        $authors[$parts[4]][$parts[2]]++;
-                    }
-                    asort($authors);
-                    fclose($f);
+        foreach ($files as $file) {
+            $f = fopen($file, "r");
+            while(!feof($f)) {
+                $line = fgets($f);
+                $parts = explode("\t", $line);
+                if (!isset($authors[$parts[4]])) {    //If the author is not in the array, initialize his stats
+                    $authors[$parts[4]]["name"] = $parts[4];
+                    $authors[$parts[4]]["C"] = 0;
+                    $authors[$parts[4]]["E"] = 0;
+                    $authors[$parts[4]]["e"] = 0;
+                    $authors[$parts[4]]["D"] = 0;
+                    $authors[$parts[4]]["R"] = 0;
                 }
+                $authors[$parts[4]][$parts[2]]++;
             }
+            fclose($f);
+        }
+        asort($authors);
+        return $authors;
+
+    }
+
+    function GetFiles($dir, &$files = array()) {    //Returns an array with all the wanted files
+        if ($dh = opendir($dir)) {
+            while (($res = readdir($dh)) !== false) {
+                if(is_dir($dir . $res . '/') && $res != '.' && $res != '..') array_merge($files, $this->getFiles($dir . $res . '/', $files));
+                else {
+                    if (strpos($res, '.changes') !== false && $res[0] != '_') $files[] = $dir . $res; 
+                }
+            } 
             closedir($dh);
         }
-        return $authors;
-    }
+        return $files; 
+    } 
 
 }
 
