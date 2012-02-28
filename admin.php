@@ -21,8 +21,8 @@ class admin_plugin_authorstats extends DokuWiki_Admin_Plugin {
     function handle() {
         if (!isset($_REQUEST['generate'])) return;
         else {
-            $this->PutToFile();
-            $this->output = "The report was generated succesfully! Save a page including the code ”<AUTHORSTATS>” to view the stats.";
+            if ($this->PutToFile()) $this->output = "The report was generated succesfully! Save a page including the code ”<AUTHORSTATS>” to view the stats.";
+            else $this->output = "Could not write to file. Check your dokuwiki folder permissions.";
             return;
         }
     }
@@ -45,7 +45,8 @@ class admin_plugin_authorstats extends DokuWiki_Admin_Plugin {
         $stats = $this->GetStatsArray(); 
         $json = new JSON();
         $json = $json->encode($stats);
-        file_put_contents(DOKU_PLUGIN."authorstats/authorstats.json", $json);
+        if (!file_put_contents(DOKU_PLUGIN."authorstats/authorstats.json", $json)) return false;
+        else return true;
     }
 
     function GetStatsArray() {    //Returns a multidimensional array with authors and their stats
