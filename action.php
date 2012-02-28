@@ -18,7 +18,8 @@ require_once DOKU_PLUGIN.'action.php';
 class action_plugin_authorstats extends DokuWiki_Action_Plugin {
 
     public function register(Doku_Event_Handler &$controller) {
-       $controller->register_hook('ACTION_ACT_PREPROCESS', 'BEFORE', $this, 'UpdateStats');
+        $controller->register_hook('ACTION_ACT_PREPROCESS', 'BEFORE', $this, 'UpdateStats');
+        $controller->register_hook('PARSER_CACHE_USE','BEFORE', $this, '_cache_prepare');
     }
 
     public function UpdateStats(Doku_Event &$event, $param) {
@@ -73,6 +74,20 @@ class action_plugin_authorstats extends DokuWiki_Action_Plugin {
         $json = $json->encode($authors);
         file_put_contents(DOKU_PLUGIN."authorstats/authorstats.json", $json); 
     }
+
+    function _cache_prepare(&$event, $param) {    //Check if the page is more recent than purgefile.
+        global $ID, $conf;
+        $cache =& $event->data;
+        $str = rawWiki($ID);
+        if (strpos($str, '<AUTHORSTATS>') !== false) {
+            if (@filemtime($cache->cache) < @filemtime($conf['cachedir'].'/purgefile')) {
+                $event->preventDefault();
+                $event->stopPropagation();
+                $event->result = false;
+            }
+        }
+    }
+
 }
 
 // vim:ts=4:sw=4:et:

@@ -51,7 +51,6 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin {
 
     public function render($mode, &$renderer, $data) {
         if($mode != 'xhtml') return false;
-        $renderer->info['cache'] = false;    //Prevent caching to ensure the stats are fresh
         $renderer->doc = $this->GetStatsTable($authors);
         return true;
     }
