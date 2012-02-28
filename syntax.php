@@ -52,14 +52,15 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin {
     public function render($mode, &$renderer, $data) {
         if($mode != 'xhtml') return false;
         $renderer->info['cache'] = false;    //Prevent caching to ensure the stats are fresh
-        $renderer->doc = $this->GetStatsTable();
+        $renderer->doc = $this->GetStatsTable($authors);
         return true;
     }
 
       
-    function GetStatsTable() {    //Returns the HTML table with the authors and their stats
+    function GetStatsTable($authors) {    //Returns the HTML table with the authors and their stats
         $output = "<table class=\"authorstats-table\"><tr><th>Name</th><th>Creates</th><th>Edits</th><th>Minor edits</th><th>Deletes</th><th>Reverts</th></tr>";
-        $authors = $this->GetStatsArray();
+        $authors = $this->GetFromFile();
+        if (!$authors) return "There are no stats to output! You should generate the stats from the admin panel first.";
         foreach ($authors as $author) {
         if (!empty($author['name'])) $output .= "<tr><td>" . 
                                     $author['name'] . "</td><td>" . 
@@ -73,45 +74,13 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin {
         return $output;
     }
 
-    function GetStatsArray() {    //Returns a multidimensional array with authors and their stats
-        global $conf;
-        $dir = $conf['metadir'] . '/';
-        $files = $this->GetFiles($dir);
-        $authors = array();
-        foreach ($files as $file) {
-            $f = fopen($file, "r");
-            while(!feof($f)) {
-                $line = fgets($f);
-                $parts = explode(DOKU_TAB, $line);
-                if (!isset($authors[$parts[4]])) {    //If the author is not in the array, initialize his stats
-                    $authors[$parts[4]]["name"] = $parts[4];
-                    $authors[$parts[4]]["C"] = 0;
-                    $authors[$parts[4]]["E"] = 0;
-                    $authors[$parts[4]]["e"] = 0;
-                    $authors[$parts[4]]["D"] = 0;
-                    $authors[$parts[4]]["R"] = 0;
-                }
-                $authors[$parts[4]][$parts[2]]++;
-            }
-            fclose($f);
-        }
-        asort($authors);
-        return $authors;
-
+    function GetFromFile() {
+        $json = new JSON(JSON_LOOSE_TYPE);
+        $file = @file_get_contents(DOKU_PLUGIN."authorstats/authorstats.json");
+        if(!$file) return false;
+        return $json->decode($file);
     }
-
-    function GetFiles($dir, &$files = array()) {    //Returns an array with all the wanted files
-        if ($dh = opendir($dir)) {
-            while (($res = readdir($dh)) !== false) {
-                if(is_dir($dir . $res . '/') && $res != '.' && $res != '..') array_merge($files, $this->getFiles($dir . $res . '/', $files));
-                else {
-                    if (strpos($res, '.changes') !== false && $res[0] != '_') $files[] = $dir . $res; 
-                }
-            } 
-            closedir($dh);
-        }
-        return $files; 
-    } 
+    
 
 }
 
