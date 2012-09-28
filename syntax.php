@@ -61,6 +61,8 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin {
         $output = "<table class=\"authorstats-table\"><tr><th>Name</th><th>Creates</th><th>Edits</th><th>Minor edits</th><th>Deletes</th><th>Reverts</th><th>Contributions</th></tr>";
         $authors = $this->GetFromFile();    
         if (!$authors) return "There are no stats to output! You should generate the stats from the admin panel first.";
+        uasort($authors, function ($a1, $a2){
+                         return intval($a1["C"])+intval($a1["E"])+intval($a1["e"])+intval($a1["D"])+intval($a1["R"]) >= intval($a2["C"])+intval($a2["E"])+intval($a2["e"])+intval($a2["D"])+intval($a2["R"]) ? -1 : 1;});
         foreach ($authors as $author) {
             if (!empty($author['name'])) $output .= "<tr><th>" . 
                                     $author['name'] . "</th><td>" . 
