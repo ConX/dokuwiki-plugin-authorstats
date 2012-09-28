@@ -52,22 +52,24 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin {
     public function render($mode, &$renderer, $data) {
         if($mode != 'xhtml') return false;
         $renderer->doc = $this->GetStatsTable($authors);
+        $renderer->info['cache'] = false; // no cache please
         return true;
     }
 
       
     function GetStatsTable($authors) {    //Returns the HTML table with the authors and their stats
-        $output = "<table class=\"authorstats-table\"><tr><th>Name</th><th>Creates</th><th>Edits</th><th>Minor edits</th><th>Deletes</th><th>Reverts</th></tr>";
-        $authors = $this->GetFromFile();
+        $output = "<table class=\"authorstats-table\"><tr><th>Name</th><th>Creates</th><th>Edits</th><th>Minor edits</th><th>Deletes</th><th>Reverts</th><th>Contributions</th></tr>";
+        $authors = $this->GetFromFile();    
         if (!$authors) return "There are no stats to output! You should generate the stats from the admin panel first.";
         foreach ($authors as $author) {
-        if (!empty($author['name'])) $output .= "<tr><td>" . 
-                                    $author['name'] . "</td><td>" . 
+            if (!empty($author['name'])) $output .= "<tr><th>" . 
+                                    $author['name'] . "</th><td>" . 
                                     $author['C'] . "</td><td>" . 
                                     $author['E'] .  "</td><td>" . 
                                     $author['e'] . "</td><td>" . 
                                     $author['D'] . "</td><td>" . 
-                                    $author['R'] . "</td></tr>";
+                                    $author['R'] . "</td><td>" . 
+                                    strval(intval($author['C'])+intval($author['E'])+intval($author['e'])+intval($author['D'])+intval($author['R']))."</td></tr>";
         }
         $output .= "</table>";
         return $output;
