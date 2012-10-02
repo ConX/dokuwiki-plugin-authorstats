@@ -4,6 +4,7 @@
  *
  * @license GPL 2 http://www.gnu.org/licenses/gpl-2.0.html
  * @author  George Chatzisofroniou <sophron@latthi.com>
+ * @author  Constantinos Xanthopoulous <conx@xanthopoulos.info>
  */
 
 // must be run within Dokuwiki
@@ -21,11 +22,11 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin {
     }
 
     public function getPType() {
-        return 'normal';
+        return 'stack';
     } 
 
     public function getSort() {
-        return 999;
+        return 371;
     } 
 
 
@@ -34,29 +35,16 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin {
     }
 
     public function handle($match, $state, $pos, &$handler){
-        switch ($state) {
-          case DOKU_LEXER_ENTER : 
-            break;
-          case DOKU_LEXER_MATCHED :
-            break;
-          case DOKU_LEXER_UNMATCHED :
-            break;
-          case DOKU_LEXER_EXIT :
-            break;
-          case DOKU_LEXER_SPECIAL :
-            break;
-        }
         return array();
     }
 
     public function render($mode, &$renderer, $data) {
         if($mode != 'xhtml') return false;
-        $renderer->doc = $this->GetStatsTable($authors);
+        $renderer->doc .= $this->GetStatsTable($authors);
         $renderer->info['cache'] = false; // no cache please
         return true;
     }
 
-      
     function GetStatsTable($authors) {    //Returns the HTML table with the authors and their stats
         $output = "<table class=\"authorstats-table\"><tr><th>Name</th><th>Creates</th><th>Edits</th><th>Minor edits</th><th>Deletes</th><th>Reverts</th><th>Contributions</th></tr>";
         $authors = $this->GetFromFile();    
