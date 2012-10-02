@@ -18,11 +18,11 @@ require_once DOKU_PLUGIN.'action.php';
 class action_plugin_authorstats extends DokuWiki_Action_Plugin {
 
     public function register(Doku_Event_Handler &$controller) {
-        $controller->register_hook('ACTION_ACT_PREPROCESS', 'BEFORE', $this, 'UpdateStats');
+        $controller->register_hook('ACTION_ACT_PREPROCESS', 'BEFORE', $this, '_updateStats');
         $controller->register_hook('PARSER_CACHE_USE','BEFORE', $this, '_cache_prepare');
     }
 
-    public function UpdateStats(Doku_Event &$event, $param) {
+    public function _updateStats(Doku_Event &$event, $param) {
         global $conf;
 
         //Check if the action was given as array key
@@ -45,7 +45,7 @@ class action_plugin_authorstats extends DokuWiki_Action_Plugin {
                     $newlastline = $lines[count($lines)-1];
                     if ($lastline != $newlastline) {    //If there is a new last line after the save, meaning there was actually an edit
                         $parts = explode(DOKU_TAB, $newlastline);
-                        $authors = $this->GetFromFile();
+                        $authors = $this->_getFromFile();
                         if (!isset($authors[$parts[4]])) {    //If the author is not in the array, initialize his stats
                             $authors[$parts[4]]["name"] = $parts[4];
                             $authors[$parts[4]]["C"] = 0;
@@ -55,21 +55,21 @@ class action_plugin_authorstats extends DokuWiki_Action_Plugin {
                             $authors[$parts[4]]["R"] = 0;
                         }
                         $authors[$parts[4]][$parts[2]]++; 
-                        $this->WriteToFile($authors);
+                        $this->_putToFile($authors);
                     }
                 } 
             }
         }
     }
 
-    function GetFromFile() {
+    function _getFromFile() {
         $json = new JSON(JSON_LOOSE_TYPE);
         $file = @file_get_contents(DOKU_PLUGIN."authorstats/authorstats.json");
         if(!$file) return false;
         return $json->decode($file);
     }
 
-    function WriteToFile($authors) {
+    function _putToFile($authors) {
         $json = new JSON();
         $json = $json->encode($authors);
         file_put_contents(DOKU_PLUGIN."authorstats/authorstats.json", $json); 

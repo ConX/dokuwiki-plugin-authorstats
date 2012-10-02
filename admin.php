@@ -21,13 +21,14 @@ class admin_plugin_authorstats extends DokuWiki_Admin_Plugin {
     function handle() {
         if (!isset($_REQUEST['generate'])) return;
         else {
-            if ($this->PutToFile()) $this->output = "The report was generated succesfully! Save a page including the code ”<AUTHORSTATS>” to view the stats.";
+            if ($this->_putToFile()) $this->output = "The report was generated succesfully! Save a page including the code ”<AUTHORSTATS>” to view the stats.";
             else $this->output = "Could not write to file. Check your dokuwiki folder permissions.";
             return;
         }
     }
  
     function html() {
+        ptln('<h2>AuthorStats Generation</h2>');
         ptln('<p>'.htmlspecialchars($this->output).'</p>');
  
         ptln('<form action="'.wl($ID).'" method="post">');
@@ -41,18 +42,18 @@ class admin_plugin_authorstats extends DokuWiki_Admin_Plugin {
         ptln('</form>');
     }
 
-    function PutToFile() {    //Puts the array with the stats to a json file
-        $stats = $this->GetStatsArray(); 
+    function _putToFile() {    //Puts the array with the stats to a json file
+        $stats = $this->_getStatsArray(); 
         $json = new JSON();
         $json = $json->encode($stats);
         if (!file_put_contents(DOKU_PLUGIN."authorstats/authorstats.json", $json)) return false;
         else return true;
     }
 
-    function GetStatsArray() {    //Returns a multidimensional array with authors and their stats
+    function _getStatsArray() {    //Returns a multidimensional array with authors and their stats
         global $conf;
         $dir = $conf['metadir'] . '/';
-        $files = $this->GetFiles($dir);
+        $files = $this->_getFiles($dir);
         $authors = array();
         foreach ($files as $file) {
             $f = fopen($file, "r");
@@ -76,10 +77,10 @@ class admin_plugin_authorstats extends DokuWiki_Admin_Plugin {
 
     }
 
-    function GetFiles($dir, &$files = array()) {    //Returns an array with all the wanted files
+    function _getFiles($dir, &$files = array()) {    //Returns an array with all the wanted files
         if ($dh = opendir($dir)) {
             while (($res = readdir($dh)) !== false) {
-                if(is_dir($dir . $res . '/') && $res != '.' && $res != '..') array_merge($files, $this->getFiles($dir . $res . '/', $files));
+                if(is_dir($dir . $res . '/') && $res != '.' && $res != '..') array_merge($files, $this->_getFiles($dir . $res . '/', $files));
                 else {
                     if (strpos($res, '.changes') !== false && $res[0] != '_') $files[] = $dir . $res; 
                 }
