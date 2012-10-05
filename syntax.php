@@ -47,7 +47,7 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin {
         else {
             $renderer->doc .= $this->_getStatsTable($authors);
         }
-        $renderer->info['cache'] = false; // no cache please
+        p_set_metadata($ID, array('authorstats' => True));
         return true;
     }
 

@@ -84,11 +84,12 @@ class action_plugin_authorstats extends DokuWiki_Action_Plugin {
         file_put_contents(DOKU_PLUGIN."authorstats/authorstats.json", $json); 
     }
 
-    function _cache_prepare(&$event, $param) {    //Check if the page is more recent than purgefile.
-        global $ID, $conf;
+    function _cache_prepare(&$event, $param) {    //If the page is no more recent than the modification of the json file, refresh the page.
+        global $ID;
+
         $cache =& $event->data;
-        $str = rawWiki($ID);
-        if (strpos($str, '<AUTHORSTATS>') !== false) {
+        $metadata = p_get_metadata($ID, 'authorstats');
+        if ($metadata) {
             if (@filemtime($cache->cache) < @filemtime(DOKU_PLUGIN."authorstats/authorstats.json")) {
                 $event->preventDefault();
                 $event->stopPropagation();
