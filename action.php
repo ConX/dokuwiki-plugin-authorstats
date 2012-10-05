@@ -89,7 +89,7 @@ class action_plugin_authorstats extends DokuWiki_Action_Plugin {
         $cache =& $event->data;
         $str = rawWiki($ID);
         if (strpos($str, '<AUTHORSTATS>') !== false) {
-            if (@filemtime($cache->cache) < @filemtime($conf['cachedir'].'/purgefile')) {
+            if (@filemtime($cache->cache) < @filemtime(DOKU_PLUGIN."authorstats/authorstats.json")) {
                 $event->preventDefault();
                 $event->stopPropagation();
                 $event->result = false;
