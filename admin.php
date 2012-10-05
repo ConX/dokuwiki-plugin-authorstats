@@ -4,6 +4,7 @@
  *
  * @license GPL 2 http://www.gnu.org/licenses/gpl-2.0.html
  * @author  George Chatzisofroniou <sophron@latthi.com>
+ * @author  Constantinos Xanthopoulos <conx@xanthopoulos.info>
  */
 
 // must be run within Dokuwiki
@@ -21,7 +22,7 @@ class admin_plugin_authorstats extends DokuWiki_Admin_Plugin {
     function handle() {
         if (!isset($_REQUEST['generate'])) return;
         else {
-            if ($this->_putToFile()) $this->output = "The report was generated succesfully! Save a page including the code ”<AUTHORSTATS>” to view the stats.";
+            if ($this->_putToFile()) $this->output = "The report was generated succesfully! Save a page including the code \"<AUTHORSTATS>\" to view the general stats or \"<AUTHORSTATS #>\" to view the stats for the last # months.";
             else $this->output = "Could not write to file. Check your dokuwiki folder permissions.";
             return;
         }
@@ -60,19 +61,28 @@ class admin_plugin_authorstats extends DokuWiki_Admin_Plugin {
             while(!feof($f)) {
                 $line = fgets($f);
                 $parts = explode(DOKU_TAB, $line);
-                if (!isset($authors[$parts[4]])) {    //If the author is not in the array, initialize his stats
-                    $authors[$parts[4]]["name"] = $parts[4];
-                    $authors[$parts[4]]["C"] = 0;
-                    $authors[$parts[4]]["E"] = 0;
-                    $authors[$parts[4]]["e"] = 0;
-                    $authors[$parts[4]]["D"] = 0;
-                    $authors[$parts[4]]["R"] = 0;
+                if ($parts && $parts[4] != "") {
+                    if (!isset($authors[$parts[4]])) {    //If the author is not in the array, initialize his stats
+                        $authors[$parts[4]]["name"] = $parts[4];
+                        $authors[$parts[4]]["C"] = 0;
+                        $authors[$parts[4]]["E"] = 0;
+                        $authors[$parts[4]]["e"] = 0;
+                        $authors[$parts[4]]["D"] = 0;
+                        $authors[$parts[4]]["R"] = 0;
+                        $authors[$part[4]]["pm"] = Array();
+                    }
+                    // Check if we have that month in the array! 
+                    if (!isset($authors[$parts[4]]["pm"][date("Ym",$parts[0])])) {
+                        $authors[$parts[4]]["pm"][date("Ym",$parts[0])] = 1;
+                    }
+                    else {
+                        $authors[$parts[4]]["pm"][date("Ym",$parts[0])]++;
+                    }
+                    $authors[$parts[4]][$parts[2]]++;
                 }
-                $authors[$parts[4]][$parts[2]]++;
             }
             fclose($f);
         }
-        asort($authors);
         return $authors;
 
     }

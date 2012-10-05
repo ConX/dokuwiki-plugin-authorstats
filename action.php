@@ -4,6 +4,7 @@
  *
  * @license GPL 2 http://www.gnu.org/licenses/gpl-2.0.html
  * @author  George Chatzisofroniou <sophron@latthi.com>
+ * @author  Constantinos Xanthopoulos <conx@xanthopoulos.info>
  */
 
 // must be run within Dokuwiki
@@ -53,6 +54,14 @@ class action_plugin_authorstats extends DokuWiki_Action_Plugin {
                             $authors[$parts[4]]["e"] = 0;
                             $authors[$parts[4]]["D"] = 0;
                             $authors[$parts[4]]["R"] = 0;
+                            $authors[$part[4]]["pm"] = Array();
+                        }
+                        // Check if we have that month in the array! 
+                        if (!isset($authors[$parts[4]]["pm"][date("Ym",$parts[0])])) {
+                            $authors[$parts[4]]["pm"][date("Ym",$parts[0])] = 1;
+                        }
+                        else {
+                            $authors[$parts[4]]["pm"][date("Ym",$parts[0])]++;
                         }
                         $authors[$parts[4]][$parts[2]]++; 
                         $this->_putToFile($authors);
