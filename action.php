@@ -18,6 +18,8 @@ require_once DOKU_PLUGIN.'action.php';
 
 class action_plugin_authorstats extends DokuWiki_Action_Plugin {
 
+    var $supportedModes = array('xhtml', 'metadata');
+
     public function register(Doku_Event_Handler &$controller) {
         $controller->register_hook('ACTION_ACT_PREPROCESS', 'BEFORE', $this, '_updateStats');
         $controller->register_hook('PARSER_CACHE_USE','BEFORE', $this, '_cache_prepare');
@@ -85,11 +87,15 @@ class action_plugin_authorstats extends DokuWiki_Action_Plugin {
     }
 
     function _cache_prepare(&$event, $param) {    //If the page is no more recent than the modification of the json file, refresh the page.
-        global $ID;
 
         $cache =& $event->data;
-        $metadata = p_get_metadata($ID, 'authorstats');
-        if ($metadata) {
+
+        if(!isset($cache->page)) return;
+        if(!isset($cache->mode) || !in_array($cache->mode, $this->supportedModes)) return;
+
+        $enabled = p_get_metadata($cache->page, 'authorstats-enabled');
+
+        if (isset($enabled)) {
             if (@filemtime($cache->cache) < @filemtime(DOKU_PLUGIN."authorstats/authorstats.json")) {
                 $event->preventDefault();
                 $event->stopPropagation();

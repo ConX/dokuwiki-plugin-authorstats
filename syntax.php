@@ -40,15 +40,20 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin {
     }
 
     public function render($mode, &$renderer, $data) {
-        if($mode != 'xhtml') return false;
-        if (preg_match("/<AUTHORSTATS (?P<months>[0-9]+)>/", $data[0], $matches)) {
-            $renderer->doc .= $this->_getMonthlyStatsTable($authors, intval($matches[1]));
+
+        if ($mode == "metadata") {
+            $renderer->meta['authorstats-enabled'] = 1;
+            return true;
         }
-        else {
-            $renderer->doc .= $this->_getStatsTable($authors);
+
+        if($mode == 'xhtml') {
+            if (preg_match("/<AUTHORSTATS (?P<months>[0-9]+)>/", $data[0], $matches)) {
+                $renderer->doc .= $this->_getMonthlyStatsTable($authors, intval($matches[1]));
+            }
+            else {
+                $renderer->doc .= $this->_getStatsTable($authors);
+            }
         }
-        p_set_metadata($ID, array('authorstats' => True));
-        return true;
     }
 
     // Returns the number of author's contributions for a number of months
