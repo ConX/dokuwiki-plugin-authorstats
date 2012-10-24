@@ -72,9 +72,9 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin {
     }
 
     function _sortByContributions($a, $b) {
-        return intval($a1["C"]) + intval($a1["E"]) + intval($a1["e"]) + intval($a1["D"]) + intval($a1["R"]) 
+        return intval($a["C"]) + intval($a["E"]) + intval($a["e"]) + intval($a["D"]) + intval($a["R"]) 
         >= 
-        intval($a2["C"])+intval($a2["E"])+intval($a2["e"])+intval($a2["D"])+intval($a2["R"]) 
+        intval($b["C"]) + intval($b["E"]) + intval($b["e"]) + intval($b["D"]) + intval($b["R"]) 
         ? -1 : 1;
     }
 
