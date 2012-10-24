@@ -68,7 +68,7 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin {
                 $sum += $author["pm"][$month];
             }
         }
-        return strval($sum);  
+        return $sum;  
     }
 
     function _sortByContributions($a, $b) {
@@ -78,11 +78,15 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin {
         ? -1 : 1;
     }
 
+    function _sortByLMC($a, $b) {
+       return $a['lmc'] >= $b['lmc'] ? -1 : 1;
+    } 
+
     function _getStatsTable($authors) {    //Returns the HTML table with the authors and their stats
         $output = "<h3>General Statistics</h3><table class=\"authorstats-table\"><tr><th>Name</th><th>Creates</th><th>Edits</th><th>Minor edits</th><th>Deletes</th><th>Reverts</th><th>Contributions</th></tr>";
         $authors = $this->_getFromFile();    
         if (!$authors) return "There are no stats to output! You should generate the stats from the admin panel first.";
-        uasort($authors, array($this, '_sortByContributions')); 
+        uasort($authors, array($this, '_sortByContributions'));
         foreach ($authors as $author) {
             if (!empty($author['name'])) $output .= "<tr><th>" . 
                                     $author['name'] . "</th><td>" . 
@@ -102,12 +106,14 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin {
         $output = "<h3>Contribution in the last ".$months." months</h3><table class=\"authorstats-table\"><tr><th>Name</th><th>Contributions</th></tr>";
         $authors = $this->_getFromFile();    
         if (!$authors) return "";
-        uasort($authors, array($this, '_sortByContributions')); 
+        foreach($authors as &$author) {
+            $author['lmc'] = $this->_getLMC($author, $months);
+        } 
+        uasort($authors, array($this, '_sortByLMC'));
         foreach ($authors as $author) {
-            $contributions = $this->_getLMC($author, $months); 
-            if (!empty($author['name']) and $contributions) $output .= "<tr><th>" . 
+            if (!empty($author['name']) and $author['lmc']) $output .= "<tr><th>" . 
                                     $author['name'] . "</th><td>" . 
-                                    $contributions . "</td></tr>";
+                                    strval($author['lmc']) . "</td></tr>";
         }
         $output .= "</table>";
         return $output;
