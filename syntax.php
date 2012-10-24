@@ -69,14 +69,20 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin {
             }
         }
         return strval($sum);  
-     }
+    }
+
+    function _sortByContributions($a, $b) {
+        return intval($a1["C"]) + intval($a1["E"]) + intval($a1["e"]) + intval($a1["D"]) + intval($a1["R"]) 
+        >= 
+        intval($a2["C"])+intval($a2["E"])+intval($a2["e"])+intval($a2["D"])+intval($a2["R"]) 
+        ? -1 : 1;
+    }
 
     function _getStatsTable($authors) {    //Returns the HTML table with the authors and their stats
         $output = "<h3>General Statistics</h3><table class=\"authorstats-table\"><tr><th>Name</th><th>Creates</th><th>Edits</th><th>Minor edits</th><th>Deletes</th><th>Reverts</th><th>Contributions</th></tr>";
         $authors = $this->_getFromFile();    
         if (!$authors) return "There are no stats to output! You should generate the stats from the admin panel first.";
-        uasort($authors, function ($a1, $a2){
-                         return intval($a1["C"])+intval($a1["E"])+intval($a1["e"])+intval($a1["D"])+intval($a1["R"]) >= intval($a2["C"])+intval($a2["E"])+intval($a2["e"])+intval($a2["D"])+intval($a2["R"]) ? -1 : 1;});
+        uasort($authors, '_sortByContributions');
         foreach ($authors as $author) {
             if (!empty($author['name'])) $output .= "<tr><th>" . 
                                     $author['name'] . "</th><td>" . 
@@ -96,8 +102,7 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin {
         $output = "<h3>Contribution in the last ".$months." months</h3><table class=\"authorstats-table\"><tr><th>Name</th><th>Contributions</th></tr>";
         $authors = $this->_getFromFile();    
         if (!$authors) return "";
-        uasort($authors, function ($a1, $a2){
-                         return intval($a1["C"])+intval($a1["E"])+intval($a1["e"])+intval($a1["D"])+intval($a1["R"]) >= intval($a2["C"])+intval($a2["E"])+intval($a2["e"])+intval($a2["D"])+intval($a2["R"]) ? -1 : 1;});
+        uasort($authors, '_sortByContributions'); 
         foreach ($authors as $author) {
             if (!empty($author['name'])) $output .= "<tr><th>" . 
                                     $author['name'] . "</th><td>" . 
