@@ -104,9 +104,10 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin {
         if (!$authors) return "";
         uasort($authors, '_sortByContributions'); 
         foreach ($authors as $author) {
-            if (!empty($author['name'])) $output .= "<tr><th>" . 
+            $contributions = $this->_getLMC($author, $months); 
+            if (!empty($author['name']) and $contributions) $output .= "<tr><th>" . 
                                     $author['name'] . "</th><td>" . 
-                                    $this->_getLMC($author, $months)."</td></tr>";
+                                    $contributions . "</td></tr>";
         }
         $output .= "</table>";
         return $output;
