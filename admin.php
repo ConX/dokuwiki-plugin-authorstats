@@ -69,7 +69,7 @@ class admin_plugin_authorstats extends DokuWiki_Admin_Plugin {
                         $authors[$parts[4]]["e"] = 0;
                         $authors[$parts[4]]["D"] = 0;
                         $authors[$parts[4]]["R"] = 0;
-                        $authors[$part[4]]["pm"] = Array();
+                        $authors[$parts[4]]["pm"] = Array();
                     }
                     // Check if we have that month in the array! 
                     if (!isset($authors[$parts[4]]["pm"][date("Ym",$parts[0])])) {
