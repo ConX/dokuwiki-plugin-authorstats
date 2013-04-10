@@ -110,7 +110,7 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin {
             $author['lmc'] = $this->_getLMC($author, $months);
         } 
         uasort($authors, array($this, '_sortByLMC'));
-        foreach ($authors as $author) {
+        foreach ($authors as &$author) {
             if (!empty($author['name']) and $author['lmc']) $output .= "<tr><th>" . 
                                     $author['name'] . "</th><td>" . 
                                     strval($author['lmc']) . "</td></tr>";
