@@ -124,7 +124,8 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
     function getYearGraph()
     {
         $output = "<h3>Yearly Contributions</h3>";
-        $authors = authorstatsReadJSON()["authors"];
+        $authors = authorstatsReadJSON();
+        $authors = $authors["authors"];
         if (!$authors) return "There are no stats to output!";
         $totalpm = Array();
         $months = Array("January", "February", "March", "April","May","June","July","August","September","October", "November", "December");
@@ -154,7 +155,8 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
     function _getStatsTable() 
     {   
         $output = " <h3>General Statistics</h3><table class=\"authorstats-table\"><tr><th>Name</th><th>Creates</th><th>Edits</th><th>Minor edits</th><th>Deletes</th><th>Reverts</th><th>Contrib</th></tr>";
-        $authors = authorstatsReadJSON()["authors"];
+        $authors = authorstatsReadJSON();
+        $authors = $authors["authors"];
         if (!$authors) return "There are no stats to output!";
         uasort($authors, array($this, '_sortByContrib'));
         foreach ($authors as $name => $author) 
@@ -177,7 +179,8 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
     function _getMonthlyStatsTable($months) 
     {   
         $output = "<h3>Contribution in the last ".$months." months</h3><table class=\"authorstats-table\"><tr><th>Name</th><th>Contrib</th></tr>";
-        $authors = authorstatsReadJSON()["authors"];
+        $authors = authorstatsReadJSON();
+        $authors = $authors["authors"];
         if (!$authors) return "There are no stats to output!";
         foreach($authors as $name=>$author) 
         {
