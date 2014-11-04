@@ -95,7 +95,7 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
 
     function _sortByContrib($a, $b) 
     {
-        return $this->_getTotalContrib($a) <= $this->_getTotalContrib(b) ? -1 : 1 ;
+        return $this->_getTotalContrib($a) <= $this->_getTotalContrib($b) ? 1 : -1 ;
     }
 
     function _getTotalContrib($a)
