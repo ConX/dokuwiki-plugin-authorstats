@@ -22,7 +22,7 @@ class action_plugin_authorstats extends DokuWiki_Action_Plugin
 
     var $supportedModes = array('xhtml', 'metadata');
 
-    public function register(Doku_Event_Handler &$controller) 
+    public function register(Doku_Event_Handler $controller) 
     {
         $controller->register_hook('ACTION_SHOW_REDIRECT', 'BEFORE', $this, '_updateSavedStats');
         $controller->register_hook('PARSER_CACHE_USE','BEFORE', $this, '_cachePrepare');
