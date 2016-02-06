@@ -156,8 +156,6 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
     {
         $output = " <h3>General Statistics</h3><table class=\"authorstats-table\"><tr><th>Name</th><th>Creates</th><th>Edits</th><th>Minor edits</th><th>Deletes</th><th>Reverts</th><th>Contrib</th></tr>";
         $authors = authorstatsReadJSON();
-{"authors":{"laurent":{"C":60,"E":230,"e":78,"D":17,"R":5,"pm":{"201601":368,"201512":20,"201602":1}},"elsalu":{"C":1,"E":0,"e":0,"D":0,"R":0,"pm":[]}},"lastchange":1454489437}
-
         $authors = $authors["authors"];
         if (!$authors) return "There are no stats to output!";
         uasort($authors, array($this, '_sortByContrib'));
