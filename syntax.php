@@ -18,47 +18,47 @@ require_once DOKU_PLUGIN.'syntax.php';
 require_once DOKU_PLUGIN.'authorstats/helpers.php';
 require_once DOKU_PLUGIN.'authorstats/gchart/gChartInit.php';
 
-class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin 
+class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
 {
-    public function getType() 
+    public function getType()
     {
         return 'substition';
     }
 
-    public function getPType() 
+    public function getPType()
     {
         return 'stack';
-    } 
+    }
 
-    public function getSort() 
+    public function getSort()
     {
         return 371;
-    } 
+    }
 
-    public function connectTo($mode) 
+    public function connectTo($mode)
     {
         $this->Lexer->addSpecialPattern('<AUTHORSTATS>',$mode,'plugin_authorstats');
         $this->Lexer->addSpecialPattern('<AUTHORSTATS [0-9]+>',$mode,'plugin_authorstats');
         $this->Lexer->addSpecialPattern('<AUTHORSTATS YEARGRAPH>',$mode,'plugin_authorstats');
     }
 
-    public function handle($match, $state, $pos, &$handler)
+    public function handle($match, $state, $pos, $handler)
     {
         return array($match);
     }
 
-    public function render($mode, &$renderer, $data) 
+    public function render($mode, $renderer, $data)
     {
 
-        if ($mode == "metadata") 
+        if ($mode == "metadata")
         {
             $renderer->meta['authorstats-enabled'] = 1;
             return true;
         }
 
-        if($mode == 'xhtml') 
+        if($mode == 'xhtml')
         {
-            if (preg_match("/<AUTHORSTATS (?P<months>[0-9]+)>/", $data[0], $matches)) 
+            if (preg_match("/<AUTHORSTATS (?P<months>[0-9]+)>/", $data[0], $matches))
             {
                 $renderer->doc .= $this->_getMonthlyStatsTable(intval($matches[1]));
             }
@@ -66,7 +66,7 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
             {
                 $renderer->doc .= $this->getYearGraph();
             }
-            else 
+            else
             {
                 $renderer->doc .= $this->_getStatsTable();
             }
@@ -74,18 +74,18 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
     }
 
     // Returns the number of author's Contrib for a number of months
-    function _getLastMonthsContrib($author, $months) 
+    function _getLastMonthsContrib($author, $months)
     {
         $m = Array();
         $sum = 0;
         // Get an array of months in the format used eg. 201208, 201209, 201210
-        for ($i=$months-1; $i>=0; $i--) 
+        for ($i=$months-1; $i>=0; $i--)
             array_push($m, date("Ym", strtotime("-".$i." Months")));
-        
+
         // Sum the Contrib
-        foreach ($m as $month) 
+        foreach ($m as $month)
         {
-            if (array_key_exists($month, $author["pm"])) 
+            if (array_key_exists($month, $author["pm"]))
             {
                 $sum += intval($author["pm"][$month]);
             }
@@ -93,9 +93,9 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
         return $sum;
     }
 
-    function _sortByContrib($a, $b) 
+    function _sortByContrib($a, $b)
     {
-        return $this->_getTotalContrib($a) <= $this->_getTotalContrib(b) ? -1 : 1 ;
+        return $this->_getTotalContrib($a) <= $this->_getTotalContrib($b) ? 1 : -1 ;
     }
 
     function _getTotalContrib($a)
@@ -103,17 +103,17 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
         return (intval($a["C"]) + intval($a["E"]) + intval($a["e"]) + intval($a["D"]) + intval($a["R"]));
     }
 
-    function _sortByLastMonthsContrib($a, $b) 
+    function _sortByLastMonthsContrib($a, $b)
     {
         return $a['lmc'] >= $b['lmc'] ? -1 : 1;
-    } 
+    }
 
     function _getMonthlyContrib($authors, $yearmonth)
     {
         $sum = 0;
         foreach ($authors as $author)
         {
-            if (array_key_exists($yearmonth, $author["pm"])) 
+            if (array_key_exists($yearmonth, $author["pm"]))
             {
                 $sum += intval($author["pm"][$yearmonth]);
             }
@@ -131,7 +131,7 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
         $months = Array("January", "February", "March", "April","May","June","July","August","September","October", "November", "December");
         for ($i=0; $i < 12; $i++)
         {
-            array_push($totalpm, $this->_getMonthlyContrib($authors, date("Y").sprintf("%02s", $i))); 
+            array_push($totalpm, $this->_getMonthlyContrib($authors, date("Y").sprintf("%02s", $i)));
         }
         $lineChart = new gchart\gLineChart(800,300);
         $lineChart->addDataSet($totalpm);
@@ -150,48 +150,53 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
         // Append the parameters for the Axes Titles
         return $output."<img src=\"".$lineChart->getUrl()."\">";
     }
-    
+
     // Returns the HTML table with the authors and their stats
-    function _getStatsTable() 
-    {   
+    function _getStatsTable()
+    {
         $output = " <h3>General Statistics</h3><table class=\"authorstats-table\"><tr><th>Name</th><th>Creates</th><th>Edits</th><th>Minor edits</th><th>Deletes</th><th>Reverts</th><th>Contrib</th></tr>";
         $authors = authorstatsReadJSON();
+{"authors":{"laurent":{"C":60,"E":230,"e":78,"D":17,"R":5,"pm":{"201601":368,"201512":20,"201602":1}},"elsalu":{"C":1,"E":0,"e":0,"D":0,"R":0,"pm":[]}},"lastchange":1454489437}
+
         $authors = $authors["authors"];
         if (!$authors) return "There are no stats to output!";
         uasort($authors, array($this, '_sortByContrib'));
-        foreach ($authors as $name => $author) 
+        foreach ($authors as $name => $author)
         {
-            $output .= "<tr><th>" . 
-            $name . "</th><td>" . 
-            $author['C'] . "</td><td>" . 
-            $author['E'] .  "</td><td>" . 
-            $author['e'] . "</td><td>" . 
-            $author['D'] . "</td><td>" . 
-            $author['R'] . "</td><td>" . 
+            $output .= "<tr><th>" .
+            $name . "</th><td>" .
+            $author['C'] . "</td><td>" .
+            $author['E'] .  "</td><td>" .
+            $author['e'] . "</td><td>" .
+            $author['D'] . "</td><td>" .
+            $author['R'] . "</td><td>" .
             strval($this->_getTotalContrib($author))."</td></tr>";
         }
         $output .= "</table>";
         return $output;
     }
 
-    // Returns the HTML table with the authors and their Contrib for the 
+    // Returns the HTML table with the authors and their Contrib for the
     // last <$months> months
-    function _getMonthlyStatsTable($months) 
-    {   
+    function _getMonthlyStatsTable($months)
+    {
         $output = "<h3>Contribution in the last ".$months." months</h3><table class=\"authorstats-table\"><tr><th>Name</th><th>Contrib</th></tr>";
         $authors = authorstatsReadJSON();
         $authors = $authors["authors"];
         if (!$authors) return "There are no stats to output!";
-        foreach($authors as $name=>$author) 
+        foreach($authors as $name=>$author)
         {
             $authors[$name]['lmc'] = $this->_getLastMonthsContrib($author, $months);
-        } 
+        }
         uasort($authors, array($this, '_sortByLastMonthsContrib'));
-        foreach ($authors as $name=>$author) 
+        foreach ($authors as $name=>$author)
         {
-            $output .= "<tr><th>" . 
-            $name . "</th><td>" . 
-            strval($authors[$name]['lmc']) . "</td></tr>";
+			if ($authors[$name]['lmc'] > 0 )
+			{
+				$output .= "<tr><th>" .
+				$name . "</th><td>" .
+				strval($authors[$name]['lmc']) . "</td></tr>";
+			}
         }
         $output .= "</table>";
         return $output;
