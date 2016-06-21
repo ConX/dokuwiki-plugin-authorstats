@@ -128,12 +128,12 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
         if (!$authors) return "There are no stats to output!";
         $totalpm = Array();
         $months = Array("January", "February", "March", "April","May","June","July","August","September","October", "November", "December");
-        for ($i=0; $i < 12; $i++)
+        for ($i=1; $i <= 12; $i++)
         {
             array_push($totalpm, $this->_getMonthlyContrib($authors, date("Y").sprintf("%02s", $i))); 
         }
         // Append the parameters for the Axes Titles
-        $url = "https://chart.googleapis.com/chart?cht=bhs&chs=600x300&chxt=y,y,x,x&chco=0000F0&chxl=0:|January|February|March|April|May|June|July|August|September|October|November|December|1:|Months|3:|Contributions&chxr=0,0,12|1,0,100|2,0,40|3,0,100&chxp=1,2,3,4,5,6,7,8,9,10,11,12|1,50|3,50&chd=t:".implode(",",$totalpm);
+        $url = "https://chart.googleapis.com/chart?cht=bhs&chs=600x400&chxt=y,y,x,x&chco=0000F0&chxl=0:|January|February|March|April|May|June|July|August|September|October|November|December|1:|Months|3:|Contributions&chxr=0,1,12|1,0,100|3,0,100&chxp=1,2,3,4,5,6,7,8,9,10,11,12|1,50|3,50&chds=a&chd=t:".implode(",",array_reverse($totalpm));
         return $output."<img src=\"".$url."\">";
     }
     
