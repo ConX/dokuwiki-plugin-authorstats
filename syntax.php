@@ -16,7 +16,6 @@ if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
 
 require_once DOKU_PLUGIN.'syntax.php';
 require_once DOKU_PLUGIN.'authorstats/helpers.php';
-require_once DOKU_PLUGIN.'authorstats/gchart/gChartInit.php';
 
 class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin 
 {
@@ -133,22 +132,9 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
         {
             array_push($totalpm, $this->_getMonthlyContrib($authors, date("Y").sprintf("%02s", $i))); 
         }
-        $lineChart = new gchart\gLineChart(800,300);
-        $lineChart->addDataSet($totalpm);
-        $lineChart->setVisibleAxes(array('x','x', 'y','y'));
-        $lineChart->setColors(array("000000"));
-        $lineChart->addAxisLabel(0, $months);
-        $lineChart->addAxisLabel(1, Array("Months"));
-        $lineChart->addAxisLabel(3, Array("Contributions"));
-        $lineChart->addAxisRange(0, 0, 12);
-        $lineChart->addAxisRange(1, 0, 100);
-        $lineChart->addAxisRange(2, 0, max($totalpm));
-        $lineChart->addAxisRange(3, 0, 100);
-        $lineChart->addAxisLabelPositions(0, range(1,12));
-        $lineChart->addAxisLabelPositions(1, 50);
-        $lineChart->addAxisLabelPositions(3, 50);
         // Append the parameters for the Axes Titles
-        return $output."<img src=\"".$lineChart->getUrl()."\">";
+        $url = "https://chart.googleapis.com/chart?cht=bhs&chs=600x300&chxt=y,y,x,x&chco=0000F0&chxl=0:|January|February|March|April|May|June|July|August|September|October|November|December|1:|Months|3:|Contributions&chxr=0,0,12|1,0,100|2,0,40|3,0,100&chxp=1,2,3,4,5,6,7,8,9,10,11,12|1,50|3,50&chd=t:".implode(",",$totalpm);
+        return $output."<img src=\"".$url."\">";
     }
     
     // Returns the HTML table with the authors and their stats
