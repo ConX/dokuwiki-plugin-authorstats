@@ -95,7 +95,7 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
 
     function _sortByContrib($a, $b) 
     {
-        return $this->_getTotalContrib($a) <= $this->_getTotalContrib(b) ? -1 : 1 ;
+        return $this->_getTotalContrib($a) <= $this->_getTotalContrib($b) ? 1 : -1 ;
     }
 
     function _getTotalContrib($a)
@@ -189,9 +189,11 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
         uasort($authors, array($this, '_sortByLastMonthsContrib'));
         foreach ($authors as $name=>$author) 
         {
-            $output .= "<tr><th>" . 
-            $name . "</th><td>" . 
-            strval($authors[$name]['lmc']) . "</td></tr>";
+            if ($authors[$name]['lmc'] > 0 ) {
+                $output .= "<tr><th>" . 
+                $name . "</th><td>" . 
+                strval($authors[$name]['lmc']) . "</td></tr>";
+            }
         }
         $output .= "</table>";
         return $output;
