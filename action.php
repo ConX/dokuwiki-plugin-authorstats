@@ -26,8 +26,60 @@ class action_plugin_authorstats extends DokuWiki_Action_Plugin
     {
         $controller->register_hook('ACTION_SHOW_REDIRECT', 'BEFORE', $this, '_updateSavedStats');
         $controller->register_hook('PARSER_CACHE_USE','BEFORE', $this, '_cachePrepare');
+        $controller->register_hook('ACTION_ACT_PREPROCESS', 'BEFORE',  $this, 'allow_show_author_pages');
+        $controller->register_hook('TPL_ACT_UNKNOWN', 'BEFORE',  $this, 'show_author_pages');
     }
 
+    public function allow_show_author_pages(Doku_Event $event, $param) {
+        if($event->data != 'authorstats_pages') return;
+        $event->preventDefault();
+    }
+
+    public function show_author_pages(Doku_Event $event, $param) {
+        if($event->data != 'authorstats_pages') return;
+        $event->preventDefault();
+        // output your XHTML content here
+
+        $flags = explode(',', str_replace(" ", "", $this->getConf('pagelist_flags')));
+        $name  = hsc($_REQUEST['name']);
+        $usd = authorstatsReadUserJSON($name);
+        $ids = $usd["pages"][$_REQUEST['type']];
+
+        if ((!$pagelist = $this->loadHelper('pagelist'))) {
+            return false;
+        }
+
+        /* @var helper_plugin_pagelist $pagelist */
+        $pagelist->setFlags($flags);
+        $pagelist->startList();
+        foreach ($ids as $key => $value) {
+            $page = array('id' => urldecode($key));
+            $pagelist->addPage($page);
+        }
+        $type = "";
+        switch($_REQUEST['type']) {
+            case 'C':
+                $type = "Creates";
+	    break;
+            case 'E':
+                $type = "Edits";
+            break;
+            case 'e':
+                $type = "Minor edits";
+            break;
+            case 'D':
+                $type = "Deletes";
+            break;
+            case 'R':
+                $type = "Reverts";
+            break;
+        }
+        print '<h1>Pages[' . $type . ']: ' . userlink($_REQUEST['name']) . '</h1>' . DOKU_LF;
+        print '<div class="level1">' . DOKU_LF;
+        print $pagelist->finishList();
+        print '</div>' . DOKU_LF;
+
+    }
 
     // Updates the saved statistics by checking the last lines
     // in the /data/meta/ directory
@@ -65,7 +117,7 @@ class action_plugin_authorstats extends DokuWiki_Action_Plugin
                     $sd["authors"][$r["author"]]["e"] = 0;
                     $sd["authors"][$r["author"]]["D"] = 0;
                     $sd["authors"][$r["author"]]["R"] = 0;
-                    $sd["authors"][$r["author"]]["pm"] = Array(); 
+                    $sd["authors"][$r["author"]]["pm"] = Array();
                 } 
                 else
                 {
@@ -76,7 +128,16 @@ class action_plugin_authorstats extends DokuWiki_Action_Plugin
                     else 
                         $sd["authors"][$r["author"]]["pm"][$r["date"]]++;
                 }
-                $sd["authors"][$r["author"]][$r["type"]]++; 
+                $sd["authors"][$r["author"]][$r["type"]]++;
+
+                if($r["author"] != "") {
+                    $usd = authorstatsReadUserJSON($r["author"]);
+                    $key = str_replace($dir, "", $file);
+                    $key = str_replace(".changes", "", $key);
+                    $key = str_replace("/", ":", $key);
+                    $usd["pages"][$r["type"]][$key] = 1;
+                    authorstatsSaveUserJSON($r["author"], $usd);
+                }
             }
         }
         $sd["lastchange"] = $newlast;
@@ -134,5 +195,6 @@ class action_plugin_authorstats extends DokuWiki_Action_Plugin
         }
         return $record;
     }
+
 }
 // vim:ts=4:sw=4:et:

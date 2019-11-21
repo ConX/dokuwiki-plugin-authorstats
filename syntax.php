@@ -136,7 +136,20 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
         $url = "https://chart.googleapis.com/chart?cht=bhs&chs=600x400&chxt=y,y,x,x&chco=0000F0&chxl=0:|January|February|March|April|May|June|July|August|September|October|November|December|1:|Months|3:|Contributions&chxr=0,1,12|1,0,100|3,0,100&chxp=1,2,3,4,5,6,7,8,9,10,11,12|1,50|3,50&chds=a&chd=t:".implode(",",array_reverse($totalpm));
         return $output."<img src=\"".$url."\">";
     }
-    
+
+    function _makeAuthorLink($author, $name, $type)
+    {
+        $url = wl("authorstats:".$name, array('do'=>'authorstats_pages', 'name'=>$name, 'type'=>$type));
+        $link = array(
+            'href' => $url,
+            'class' => "wikilink1",
+            'tooltip' => hsc($name),
+            'title' => hsc($author[$type])
+        );
+        $link = '<a href="'.$link['href'].'" class="'.$link['class'].'" title="'.$link['tooltip'].'" rel="tag">'.$link['title'].'</a>';
+        return $link;
+    }
+
     // Returns the HTML table with the authors and their stats
     function _getStatsTable() 
     {   
@@ -147,13 +160,13 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
         uasort($authors, array($this, '_sortByContrib'));
         foreach ($authors as $name => $author) 
         {
-            $output .= "<tr><th>" . 
-            $name . "</th><td>" . 
-            $author['C'] . "</td><td>" . 
-            $author['E'] .  "</td><td>" . 
-            $author['e'] . "</td><td>" . 
-            $author['D'] . "</td><td>" . 
-            $author['R'] . "</td><td>" . 
+            $output .= "<tr><th>" .
+            userlink($name) . "</th><td>" .
+            $this->_makeAuthorLink($author, $name, 'C') . "</td><td>" .
+            $this->_makeAuthorLink($author, $name, 'E') . "</td><td>" .
+            $this->_makeAuthorLink($author, $name, 'e') . "</td><td>" .
+            $this->_makeAuthorLink($author, $name, 'D') . "</td><td>" .
+            $this->_makeAuthorLink($author, $name, 'R') . "</td><td>" .
             strval($this->_getTotalContrib($author))."</td></tr>";
         }
         $output .= "</table>";
