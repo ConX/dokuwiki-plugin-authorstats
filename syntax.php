@@ -149,12 +149,12 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
         foreach ($authors as $name => $author)
         {
             $realname = $auth->getUserData($name);
-            if ($realname !== false) {
-              $name = $realname["name"];
-            } else {$name = "<i>($name)</i>";}
+            if ($realname !== false and $this->getConf("show-realname")) {
+              $dname = $realname["name"];
+            } else {$dname = "<i>($name)</i>";}
 
             $output .= "<tr><th>" .
-            $name . "</th><td>" .
+            $dname . "</th><td>" .
             $author['C'] . "</td><td>" .
             $author['E'] .  "</td><td>" .
             $author['e'] . "</td><td>" .
@@ -174,22 +174,22 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
         $authors = authorstatsReadJSON();
         $authors = $authors["authors"];
         if (!$authors) return "There are no stats to output!";
-        foreach($authors as $name=>$author) 
+        foreach($authors as $name => $author) 
         {
             $authors[$name]['lmc'] = $this->_getLastMonthsContrib($author, $months);
         }
         uasort($authors, array($this, '_sortByLastMonthsContrib'));
         global $auth;
-        foreach ($authors as $name=>$author)
+        foreach ($authors as $name => $author)
         {
             if ($authors[$name]['lmc'] > 0 ) {
                 $realname = $auth->getUserData($name);
-                if ($realname !== false) {
+            	if ($realname !== false and $this->getConf("show-realname")) {
                   $dname = $realname["name"];
                 } else {$dname = "<i>($name)</i>";}
 
                 $output .= "<tr><th>" .
-                $name . "</th><td>" .
+                $dname . "</th><td>" .
                 strval($authors[$name]['lmc']) . "</td></tr>";
             }
         }
