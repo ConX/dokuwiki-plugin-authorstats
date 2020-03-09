@@ -137,6 +137,20 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
         return $output."<img src=\"".$url."\">";
     }
 
+    function _makeAuthorLink($author, $name, $type)
+    {
+	if (!$this->getConf("enable-pagelist")){ return $author[$type]; }
+        $url = wl("authorstats:".$name, array('do'=>'authorstats_pages', 'name'=>$name, 'type'=>$type));
+        $link = array(
+            'href' => $url,
+            'class' => "wikilink1",
+            'tooltip' => hsc($name),
+            'title' => hsc($author[$type])
+        );
+        $link = '<a href="'.$link['href'].'" class="'.$link['class'].'" title="'.$link['tooltip'].'" rel="tag">'.$link['title'].'</a>';
+        return $link;
+    }
+
     // Returns the HTML table with the authors and their stats
     function _getStatsTable()
     {
@@ -150,16 +164,18 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
         {
             $realname = $auth->getUserData($name);
             if ($realname !== false and $this->getConf("show-realname")) {
-              $dname = $realname["name"];
+            	$dname = $realname["name"];
+	    } else if ($this->getConf("show-profile-links")) {
+    		$dname = userlink($name);    
             } else {$dname = "<i>($name)</i>";}
 
             $output .= "<tr><th>" .
             $dname . "</th><td>" .
-            $author['C'] . "</td><td>" .
-            $author['E'] .  "</td><td>" .
-            $author['e'] . "</td><td>" .
-            $author['D'] . "</td><td>" .
-            $author['R'] . "</td><td>" .
+            $this->_makeAuthorLink($author, $name, 'C') . "</td><td>" .
+            $this->_makeAuthorLink($author, $name, 'E') . "</td><td>" .
+            $this->_makeAuthorLink($author, $name, 'e') . "</td><td>" .
+            $this->_makeAuthorLink($author, $name, 'D') . "</td><td>" .
+            $this->_makeAuthorLink($author, $name, 'R') . "</td><td>" .
             strval($this->_getTotalContrib($author))."</td></tr>";
         }
         $output .= "</table>";
@@ -186,6 +202,8 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
                 $realname = $auth->getUserData($name);
             	if ($realname !== false and $this->getConf("show-realname")) {
                   $dname = $realname["name"];
+	    	} else if ($this->getConf("show-profile-links")) {
+    		  $dname = userlink($name);
                 } else {$dname = "<i>($name)</i>";}
 
                 $output .= "<tr><th>" .

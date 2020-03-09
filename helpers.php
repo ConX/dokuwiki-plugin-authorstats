@@ -24,4 +24,21 @@ function authorstatsSaveJSON($authors)
     file_put_contents(DOKU_PLUGIN."authorstats/authorstats.json", $json); 
 }
 
+// Read the saved statistics for user from the JSON file
+function authorstatsReadUserJSON($loginname)
+{
+    $json = new JSON(JSON_LOOSE_TYPE);
+    $file = @file_get_contents(DOKU_PLUGIN."authorstats/".$loginname.".json");
+    if(!$file) return Array();
+    return $json->decode($file);
+}
+
+// Save the statistics of user into the JSON file
+function authorstatsSaveUserJSON($loginname, $pages)
+{
+    $json = new JSON();
+    $json = $json->encode($pages);
+    file_put_contents(DOKU_PLUGIN."authorstats/".$loginname.".json", $json);
+}
+
 ?>
