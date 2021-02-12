@@ -39,6 +39,7 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
         $this->Lexer->addSpecialPattern('<AUTHORSTATS>',$mode,'plugin_authorstats');
         $this->Lexer->addSpecialPattern('<AUTHORSTATS [0-9]+>',$mode,'plugin_authorstats');
         $this->Lexer->addSpecialPattern('<AUTHORSTATS YEARGRAPH>',$mode,'plugin_authorstats');
+        $this->Lexer->addSpecialPattern('<AUTHORSTATS YEARGRAPH\s+\d*\s*\w*>',$mode,'plugin_authorstats');
     }
 
     public function handle($match, $state, $pos, Doku_Handler $handler)
@@ -61,9 +62,9 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
             {
                 $renderer->doc .= $this->_getMonthlyStatsTable(intval($matches[1]));
             }
-            else if (preg_match("/<AUTHORSTATS YEARGRAPH>/", $data[0], $matches))
+            else if (preg_match("/<AUTHORSTATS YEARGRAPH\s*(?P<years>[0-9]+)*\s*(?P<sort>(:?asc|ascending|desc|descending|rev|reverse)*)>/", $data[0], $matches))
             {
-                $renderer->doc .= $this->getYearGraph();
+                $renderer->doc .= $this->getYearGraph($matches);
             }
             else
             {
@@ -120,20 +121,44 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
         return $sum;
     }
 
-    function getYearGraph()
+    function getYearGraph($inopts)
     {
         $output = "<h3>Yearly Contributions</h3>";
         $authors = authorstatsReadJSON();
         $authors = $authors["authors"];
         if (!$authors) return "There are no stats to output!";
         $totalpm = Array();
-        $months = Array("January", "February", "March", "April","May","June","July","August","September","October", "November", "December");
-        for ($i=1; $i <= 12; $i++)
-        {
-            array_push($totalpm, $this->_getMonthlyContrib($authors, date("Y").sprintf("%02s", $i)));
+        $labels = Array();
+
+        $max_months = 12;
+        if (isset($inopts['years']) && $inopts['years'] > 0) {
+            $max_months = 12 * $inopts['years'];
         }
+        for ($i=0; $i <= $max_months; $i++) {
+            array_push($totalpm, $this->_getMonthlyContrib($authors, date("Ym", strtotime("-$i months"))));
+            array_push($labels,  date("Y-M", strtotime("-$i months")));
+        }
+
+        $totalpm = array_reverse($totalpm);       // For some odd reason the charting tool needs this is the reverse order of the labels...
+        if (isset($inopts['sort'])) {
+            if (preg_match("/^(desc|descending|rev|reverse)$/", $inopts['sort']) ) {    // Reverse the sort order from the default
+                $totalpm = array_reverse($totalpm);
+                $labels  = array_reverse($labels);
+            }
+        }
+
         // Append the parameters for the Axes Titles
-        $url = "https://chart.googleapis.com/chart?cht=bhs&chs=600x400&chxt=y,y,x,x&chco=0000F0&chxl=0:|January|February|March|April|May|June|July|August|September|October|November|December|1:|Months|3:|Contributions&chxr=0,1,12|1,0,100|3,0,100&chxp=1,2,3,4,5,6,7,8,9,10,11,12|1,50|3,50&chds=a&chd=t:".implode(",",array_reverse($totalpm));
+        $url  = "https://chart.googleapis.com/chart";
+        $url .= "?cht=bhs";                                                                // Chart type; https://developers.google.com/chart/image/docs/gallery/chart_gall
+        $url .= "&chs=500x600";                                                            // Chart size (width x height); The overall size is very limited, max total pixel has to be less than 300k.
+        $url .= "&chxt=y,y,x,x";                                                           // Visible axes
+        $url .= "&chco=0000F0";                                                            // Series colors
+        $url .= "&chds=a";                                                                 // Scale for text format with custom range; a == automatic scaling
+        $url .= "&chbh=a";                                                                 // Bar Width and Spacing; a == bars will resize to fit in the chart
+        $url .= "&chxr=0,1,12|1,0,100|3,0,100";                                            // Axis ranges
+        $url .= "&chxp=1,2,3,4,5,6,7,8,9,10,11,12|1,50|3,50";                              // Axis label positions
+        $url .= "&chxl=0:|" . implode("|", $labels) . "|1:|Yr-Mon|3:|Num_of_Contributions";  // Axis labels
+        $url .= "&chd=t:".implode(",",$totalpm);                                           // Chart data string
         return $output."<img src=\"".$url."\">";
     }
 
