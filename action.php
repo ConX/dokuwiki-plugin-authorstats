@@ -88,7 +88,9 @@ class action_plugin_authorstats extends DokuWiki_Action_Plugin
         global $conf;
         $dir = $conf['metadir'] . '/';
 
-	$conf_mtime = @filemtime(DOKU_CONF."local.php");
+        authorstatsCreateDirIfMissing("data");
+
+        $conf_mtime = @filemtime(DOKU_CONF."local.php");
 
         // Return the files in the directory /data/meta
         $files = $this->_getChangeLogs($dir);
@@ -102,7 +104,7 @@ class action_plugin_authorstats extends DokuWiki_Action_Plugin
 	// Delete JSON files and update everything if config file has changed
 	if ($lastchange < $conf_mtime) {
 		$lastchange = (-1*PHP_INT_MAX)-1;
-		array_map("unlink", glob(DOKU_PLUGIN."authorstats/*.json"));
+		array_map("unlink", glob(DOKU_PLUGIN."authorstats/data/*.json"));
 		$sd = Array();
 	}
         $newlast = $lastchange; 
@@ -165,7 +167,7 @@ class action_plugin_authorstats extends DokuWiki_Action_Plugin
 
         if (isset($enabled)) 
         {
-            if (@filemtime($cache->cache) < @filemtime(DOKU_PLUGIN."authorstats/authorstats.json")) 
+            if (@filemtime($cache->cache) < @filemtime(DOKU_PLUGIN."authorstats/data/authorstats.json")) 
             {
                 $event->preventDefault();
                 $event->stopPropagation();
