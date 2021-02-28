@@ -51,10 +51,6 @@ function authorstatsCreateDirIfMissing($folder)
     {
         mkdir($path, 0755);
     }
-    else if (!is_dir($path))
-    {
-        // log or print an error
-    }
 }
 
 ?>
