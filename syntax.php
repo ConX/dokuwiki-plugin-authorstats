@@ -1,4 +1,5 @@
 <?php
+
 /**
  * DokuWiki Plugin authorstats (Syntax Component)
  *
@@ -12,13 +13,20 @@ if (!defined('DOKU_INC')) die();
 
 if (!defined('DOKU_LF')) define('DOKU_LF', "\n");
 if (!defined('DOKU_TAB')) define('DOKU_TAB', "\t");
-if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
-
-require_once DOKU_PLUGIN.'syntax.php';
-require_once DOKU_PLUGIN.'authorstats/helpers.php';
+if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN', DOKU_INC . 'lib/plugins/');
 
 class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
 {
+    var $helpers = null;
+
+    /**
+     * Constructor. Load helper plugin
+     */
+    public function __construct()
+    {
+        $this->helpers = $this->loadHelper('authorstats', true);
+    }
+
     public function getType()
     {
         return 'substition';
@@ -36,10 +44,10 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
 
     public function connectTo($mode)
     {
-        $this->Lexer->addSpecialPattern('<AUTHORSTATS>',$mode,'plugin_authorstats');
-        $this->Lexer->addSpecialPattern('<AUTHORSTATS [0-9]+>',$mode,'plugin_authorstats');
-        $this->Lexer->addSpecialPattern('<AUTHORSTATS YEARGRAPH>',$mode,'plugin_authorstats');
-        $this->Lexer->addSpecialPattern('<AUTHORSTATS YEARGRAPH\s+\d*\s*\w*>',$mode,'plugin_authorstats');
+        $this->Lexer->addSpecialPattern('<AUTHORSTATS>', $mode, 'plugin_authorstats');
+        $this->Lexer->addSpecialPattern('<AUTHORSTATS [0-9]+>', $mode, 'plugin_authorstats');
+        $this->Lexer->addSpecialPattern('<AUTHORSTATS YEARGRAPH>', $mode, 'plugin_authorstats');
+        $this->Lexer->addSpecialPattern('<AUTHORSTATS YEARGRAPH\s+\d*\s*\w*>', $mode, 'plugin_authorstats');
     }
 
     public function handle($match, $state, $pos, Doku_Handler $handler)
@@ -50,24 +58,17 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
     public function render($mode, Doku_Renderer $renderer, $data)
     {
 
-        if ($mode == "metadata")
-        {
+        if ($mode == "metadata") {
             $renderer->meta['authorstats-enabled'] = 1;
             return true;
         }
 
-        if($mode == 'xhtml')
-        {
-            if (preg_match("/<AUTHORSTATS (?P<months>[0-9]+)>/", $data[0], $matches))
-            {
+        if ($mode == 'xhtml') {
+            if (preg_match("/<AUTHORSTATS (?P<months>[0-9]+)>/", $data[0], $matches)) {
                 $renderer->doc .= $this->_getMonthlyStatsTable(intval($matches[1]));
-            }
-            else if (preg_match("/<AUTHORSTATS YEARGRAPH\s*(?P<years>[0-9]+)*\s*(?P<sort>(:?asc|ascending|desc|descending|rev|reverse)*)>/", $data[0], $matches))
-            {
+            } else if (preg_match("/<AUTHORSTATS YEARGRAPH\s*(?P<years>[0-9]+)*\s*(?P<sort>(:?asc|ascending|desc|descending|rev|reverse)*)>/", $data[0], $matches)) {
                 $renderer->doc .= $this->getYearGraph($matches);
-            }
-            else
-            {
+            } else {
                 $renderer->doc .= $this->_getStatsTable();
             }
         }
@@ -76,17 +77,15 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
     // Returns the number of author's Contrib for a number of months
     function _getLastMonthsContrib($author, $months)
     {
-        $m = Array();
+        $m = array();
         $sum = 0;
         // Get an array of months in the format used eg. 201208, 201209, 201210
-        for ($i=$months-1; $i>=0; $i--)
-            array_push($m, date("Ym", strtotime("-".$i." Months")));
+        for ($i = $months - 1; $i >= 0; $i--)
+            array_push($m, date("Ym", strtotime("-" . $i . " Months")));
 
         // Sum the Contrib
-        foreach ($m as $month)
-        {
-            if (array_key_exists($month, $author["pm"]))
-            {
+        foreach ($m as $month) {
+            if (array_key_exists($month, $author["pm"])) {
                 $sum += intval($author["pm"][$month]);
             }
         }
@@ -95,7 +94,7 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
 
     function _sortByContrib($a, $b)
     {
-        return $this->_getTotalContrib($a) <= $this->_getTotalContrib($b) ? 1 : -1 ;
+        return $this->_getTotalContrib($a) <= $this->_getTotalContrib($b) ? 1 : -1;
     }
 
     function _getTotalContrib($a)
@@ -111,10 +110,8 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
     function _getMonthlyContrib($authors, $yearmonth)
     {
         $sum = 0;
-        foreach ($authors as $author)
-        {
-            if (array_key_exists($yearmonth, $author["pm"]))
-            {
+        foreach ($authors as $author) {
+            if (array_key_exists($yearmonth, $author["pm"])) {
                 $sum += intval($author["pm"][$yearmonth]);
             }
         }
@@ -124,24 +121,24 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
     function getYearGraph($inopts)
     {
         $output = "<h3>Yearly Contributions</h3>";
-        $authors = authorstatsReadJSON();
+        $authors = $this->helpers->readJSON();
         $authors = $authors["authors"];
         if (!$authors) return "There are no stats to output!";
-        $totalpm = Array();
-        $labels = Array();
+        $totalpm = array();
+        $labels = array();
 
         $max_months = 12;
         if (isset($inopts['years']) && $inopts['years'] > 0) {
             $max_months = 12 * $inopts['years'];
         }
-        for ($i=0; $i <= $max_months; $i++) {
+        for ($i = 0; $i <= $max_months; $i++) {
             array_push($totalpm, $this->_getMonthlyContrib($authors, date("Ym", strtotime("-$i months"))));
             array_push($labels,  date("Y-M", strtotime("-$i months")));
         }
 
         $totalpm = array_reverse($totalpm);       // For some odd reason the charting tool needs this is the reverse order of the labels...
         if (isset($inopts['sort'])) {
-            if (preg_match("/^(desc|descending|rev|reverse)$/", $inopts['sort']) ) {    // Reverse the sort order from the default
+            if (preg_match("/^(desc|descending|rev|reverse)$/", $inopts['sort'])) {    // Reverse the sort order from the default
                 $totalpm = array_reverse($totalpm);
                 $labels  = array_reverse($labels);
             }
@@ -158,52 +155,59 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
         $url .= "&chxr=0,1,12|1,0,100|3,0,100";                                            // Axis ranges
         $url .= "&chxp=1,2,3,4,5,6,7,8,9,10,11,12|1,50|3,50";                              // Axis label positions
         $url .= "&chxl=0:|" . implode("|", $labels) . "|1:|Yr-Mon|3:|Num_of_Contributions";  // Axis labels
-        $url .= "&chd=t:".implode(",",$totalpm);                                           // Chart data string
-        return $output."<img src=\"".$url."\">";
+        $url .= "&chd=t:" . implode(",", $totalpm);                                           // Chart data string
+        return $output . "<img src=\"" . $url . "\">";
     }
 
     function _makeAuthorLink($author, $name, $type)
     {
-	if (!$this->getConf("enable-pagelist")){ return $author[$type]; }
-        $url = wl("authorstats:".$name, array('do'=>'authorstats_pages', 'name'=>$name, 'type'=>$type));
+        if (!$this->getConf("enable-pagelist")) {
+            return $author[$type];
+        }
+        $url = wl("authorstats:" . $name, array('do' => 'authorstats_pages', 'name' => $name, 'type' => $type));
         $link = array(
             'href' => $url,
             'class' => "wikilink1",
             'tooltip' => hsc($name),
             'title' => hsc($author[$type])
         );
-        $link = '<a href="'.$link['href'].'" class="'.$link['class'].'" title="'.$link['tooltip'].'" rel="tag">'.$link['title'].'</a>';
+        $link = '<a href="' . $link['href'] . '" class="' . $link['class'] . '" title="' . $link['tooltip'] . '" rel="tag">' . $link['title'] . '</a>';
         return $link;
     }
 
     // Returns the HTML table with the authors and their stats
     function _getStatsTable()
     {
+        $start_time = microtime(true);
         $output = " <h3>General Statistics</h3><table class=\"authorstats-table\"><tr><th>Name</th><th>Creates</th><th>Edits</th><th>Minor edits</th><th>Deletes</th><th>Reverts</th><th>Contrib</th></tr>";
-        $authors = authorstatsReadJSON();
+        $authors = $this->helpers->readJSON();
         $authors = $authors["authors"];
         if (!$authors) return "There are no stats to output!";
         uasort($authors, array($this, '_sortByContrib'));
         global $auth;
-        foreach ($authors as $name => $author)
-        {
+        foreach ($authors as $name => $author) {
             $realname = $auth->getUserData($name);
             if ($realname !== false and $this->getConf("show-realname")) {
-            	$dname = $realname["name"];
-	    } else if ($this->getConf("show-profile-links")) {
-    		$dname = userlink($name);    
-            } else {$dname = "<i>($name)</i>";}
+                $dname = $realname["name"];
+            } else if ($this->getConf("show-profile-links")) {
+                $dname = userlink($name);
+            } else {
+                $dname = "<i>($name)</i>";
+            }
 
             $output .= "<tr><th>" .
-            $dname . "</th><td>" .
-            $this->_makeAuthorLink($author, $name, 'C') . "</td><td>" .
-            $this->_makeAuthorLink($author, $name, 'E') . "</td><td>" .
-            $this->_makeAuthorLink($author, $name, 'e') . "</td><td>" .
-            $this->_makeAuthorLink($author, $name, 'D') . "</td><td>" .
-            $this->_makeAuthorLink($author, $name, 'R') . "</td><td>" .
-            strval($this->_getTotalContrib($author))."</td></tr>";
+                $dname . "</th><td>" .
+                $this->_makeAuthorLink($author, $name, 'C') . "</td><td>" .
+                $this->_makeAuthorLink($author, $name, 'E') . "</td><td>" .
+                $this->_makeAuthorLink($author, $name, 'e') . "</td><td>" .
+                $this->_makeAuthorLink($author, $name, 'D') . "</td><td>" .
+                $this->_makeAuthorLink($author, $name, 'R') . "</td><td>" .
+                strval($this->_getTotalContrib($author)) . "</td></tr>";
         }
         $output .= "</table>";
+        $end_time = microtime(true);
+        $execution_time = ($end_time - $start_time);
+        dbglog($execution_time, "Get stats table");
         return $output;
     }
 
@@ -211,33 +215,32 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
     // last <$months> months
     function _getMonthlyStatsTable($months)
     {
-        $output = "<h3>Contribution in the last ".$months." months</h3><table class=\"authorstats-table\"><tr><th>Name</th><th>Contrib</th></tr>";
-        $authors = authorstatsReadJSON();
+        $output = "<h3>Contribution in the last " . $months . " months</h3><table class=\"authorstats-table\"><tr><th>Name</th><th>Contrib</th></tr>";
+        $authors = $this->helpers->readJSON();
         $authors = $authors["authors"];
         if (!$authors) return "There are no stats to output!";
-        foreach($authors as $name => $author) 
-        {
+        foreach ($authors as $name => $author) {
             $authors[$name]['lmc'] = $this->_getLastMonthsContrib($author, $months);
         }
         uasort($authors, array($this, '_sortByLastMonthsContrib'));
         global $auth;
-        foreach ($authors as $name => $author)
-        {
-            if ($authors[$name]['lmc'] > 0 ) {
+        foreach ($authors as $name => $author) {
+            if ($authors[$name]['lmc'] > 0) {
                 $realname = $auth->getUserData($name);
-            	if ($realname !== false and $this->getConf("show-realname")) {
-                  $dname = $realname["name"];
-	    	} else if ($this->getConf("show-profile-links")) {
-    		  $dname = userlink($name);
-                } else {$dname = "<i>($name)</i>";}
+                if ($realname !== false and $this->getConf("show-realname")) {
+                    $dname = $realname["name"];
+                } else if ($this->getConf("show-profile-links")) {
+                    $dname = userlink($name);
+                } else {
+                    $dname = "<i>($name)</i>";
+                }
 
                 $output .= "<tr><th>" .
-                $dname . "</th><td>" .
-                strval($authors[$name]['lmc']) . "</td></tr>";
+                    $dname . "</th><td>" .
+                    strval($authors[$name]['lmc']) . "</td></tr>";
             }
         }
         $output .= "</table>";
         return $output;
     }
 }
-// vim:ts=4:sw=4:et:
