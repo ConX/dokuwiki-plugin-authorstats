@@ -22,9 +22,8 @@ class action_plugin_authorstats extends DokuWiki_Action_Plugin
     function __construct()
     {
         $this->helpers = $this->loadHelper("authorstats", true);
-        if (!file_exists(DOKU_PLUGIN . "authorstats/data/authorstats.json")) {
+        if (!$this->helpers->statsFileExists())
             $this->_initializeData();
-        }
     }
 
     var $supportedModes = array("xhtml", "metadata");
@@ -97,7 +96,7 @@ class action_plugin_authorstats extends DokuWiki_Action_Plugin
         $this->helpers->createDirIfMissing("data");
         // Delete JSON files
         $lastchange = (-1 * PHP_INT_MAX) - 1;
-        array_map("unlink", glob(DOKU_PLUGIN . "authorstats/data/*.json"));
+        array_map("unlink", glob($this->helpers->basedir . "/*.json"));
         $sd = array();
         // Update everything
         $files = $this->_getChangeLogs($dir);
@@ -131,7 +130,7 @@ class action_plugin_authorstats extends DokuWiki_Action_Plugin
         }
     }
 
-    // If the page is no more recent than the modification of the json file, refresh the page.
+    // If the page is no more recent than the modification of the JSON file, refresh the page.
     public function _cachePrepare(&$event, $param)
     {
         $cache = &$event->data;
@@ -141,7 +140,7 @@ class action_plugin_authorstats extends DokuWiki_Action_Plugin
 
         $enabled = p_get_metadata($cache->page, "authorstats-enabled");
         if (isset($enabled)) {
-            if (@filemtime($cache->cache) < @filemtime(DOKU_PLUGIN . "authorstats/data/authorstats.json")) {
+            if (@filemtime($cache->cache) < @filemtime($this->helpers->summaryfile)) {
                 $event->preventDefault();
                 $event->stopPropagation();
                 $event->result = false;
