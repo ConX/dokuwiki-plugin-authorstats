@@ -188,17 +188,9 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
         $authors = $authors["authors"];
         if (!$authors) return  $this->getLang("no-stats");
         uasort($authors, array($this, "_sortByContrib"));
-        global $auth;
         foreach ($authors as $name => $author) {
-            $realname = $auth->getUserData($name);
-            if ($realname !== false and $this->getConf("show-realname")) {
-                $dname = $realname["name"];
-            } else if ($this->getConf("show-profile-links")) {
-                $dname = userlink($name, true);
-            } else {
-                $dname = "<i>($name)</i>";
-            }
-
+            $dname = $this->_getUser($name);
+            if ($dname == null) continue;
             $output .= "<tr><th>" .
                 $dname . "</th><td>" .
                 $this->_makeAuthorLink($author, $name, "C") . "</td><td>" .
@@ -231,18 +223,10 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
             $authors[$name]["lmc"] = $this->_getLastMonthsContrib($author, $months);
         }
         uasort($authors, array($this, "_sortByLastMonthsContrib"));
-        global $auth;
         foreach ($authors as $name => $author) {
             if ($authors[$name]["lmc"] > 0) {
-                $realname = $auth->getUserData($name);
-                if ($realname !== false and $this->getConf("show-realname")) {
-                    $dname = $realname["name"];
-                } else if ($this->getConf("show-profile-links")) {
-                    $dname = userlink($name, true);
-                } else {
-                    $dname = "<i>($name)</i>";
-                }
-
+                $dname = $this->_getUser($name);
+                if ($dname == null) continue;
                 $output .= "<tr><th>" .
                     $dname . "</th><td>" .
                     strval($authors[$name]["lmc"]) . "</td></tr>";
@@ -255,5 +239,22 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
             dbglog(__FUNCTION__ . " time:" . $execution_time, "AUTHORSTATS PLUGIN");
         }
         return $output;
+    }
+
+    function _getUser($name)
+    {
+        global $auth;
+        $user = $auth->getUserData($name);
+        if ($user !== false and $this->getConf("show-realname")) {
+            $dname = $user["name"];
+        } else if ($this->getConf("show-profile-links")) {
+        } else if ($user !== false) {
+            $dname = $name;
+        } else {
+            // Deleted user?
+            if (!$this->getConf("show-deleted-users")) return null;
+            $dname = "<i>($name)</i>";
+        }
+        return $dname;
     }
 }
