@@ -9,11 +9,10 @@
  */
 
 // must be run within Dokuwiki
-if (!defined('DOKU_INC')) die();
-
-if (!defined('DOKU_LF')) define('DOKU_LF', "\n");
-if (!defined('DOKU_TAB')) define('DOKU_TAB', "\t");
-if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN', DOKU_INC . 'lib/plugins/');
+if (!defined("DOKU_INC")) die();
+if (!defined("DOKU_LF")) define("DOKU_LF", "\n");
+if (!defined("DOKU_TAB")) define("DOKU_TAB", "\t");
+if (!defined("DOKU_PLUGIN")) define("DOKU_PLUGIN", DOKU_INC . "lib/plugins/");
 
 class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
 {
@@ -24,17 +23,17 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
      */
     public function __construct()
     {
-        $this->helpers = $this->loadHelper('authorstats', true);
+        $this->helpers = $this->loadHelper("authorstats", true);
     }
 
     public function getType()
     {
-        return 'substition';
+        return "substition";
     }
 
     public function getPType()
     {
-        return 'stack';
+        return "stack";
     }
 
     public function getSort()
@@ -44,10 +43,10 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
 
     public function connectTo($mode)
     {
-        $this->Lexer->addSpecialPattern('<AUTHORSTATS>', $mode, 'plugin_authorstats');
-        $this->Lexer->addSpecialPattern('<AUTHORSTATS [0-9]+>', $mode, 'plugin_authorstats');
-        $this->Lexer->addSpecialPattern('<AUTHORSTATS YEARGRAPH>', $mode, 'plugin_authorstats');
-        $this->Lexer->addSpecialPattern('<AUTHORSTATS YEARGRAPH\s+\d*\s*\w*>', $mode, 'plugin_authorstats');
+        $this->Lexer->addSpecialPattern("<AUTHORSTATS>", $mode, "plugin_authorstats");
+        $this->Lexer->addSpecialPattern("<AUTHORSTATS [0-9]+>", $mode, "plugin_authorstats");
+        $this->Lexer->addSpecialPattern("<AUTHORSTATS YEARGRAPH>", $mode, "plugin_authorstats");
+        $this->Lexer->addSpecialPattern("<AUTHORSTATS YEARGRAPH\s+\d*\s*\w*>", $mode, "plugin_authorstats");
     }
 
     public function handle($match, $state, $pos, Doku_Handler $handler)
@@ -59,11 +58,11 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
     {
 
         if ($mode == "metadata") {
-            $renderer->meta['authorstats-enabled'] = 1;
+            $renderer->meta["authorstats-enabled"] = 1;
             return true;
         }
 
-        if ($mode == 'xhtml') {
+        if ($mode == "xhtml") {
             if (preg_match("/<AUTHORSTATS (?P<months>[0-9]+)>/", $data[0], $matches)) {
                 $renderer->doc .= $this->_getMonthlyStatsTable(intval($matches[1]));
             } else if (preg_match("/<AUTHORSTATS YEARGRAPH\s*(?P<years>[0-9]+)*\s*(?P<sort>(:?asc|ascending|desc|descending|rev|reverse)*)>/", $data[0], $matches)) {
@@ -74,7 +73,7 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
         }
     }
 
-    // Returns the number of author's Contrib for a number of months
+    // Returns the number of author"s Contrib for a number of months
     function _getLastMonthsContrib($author, $months)
     {
         $m = array();
@@ -104,7 +103,7 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
 
     function _sortByLastMonthsContrib($a, $b)
     {
-        return $a['lmc'] >= $b['lmc'] ? -1 : 1;
+        return $a["lmc"] >= $b["lmc"] ? -1 : 1;
     }
 
     function _getMonthlyContrib($authors, $yearmonth)
@@ -120,16 +119,16 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
 
     function getYearGraph($inopts)
     {
-        $output = "<h3>Yearly Contributions</h3>";
-        $authors = $this->helpers->readJSON();
-        $authors = $authors["authors"];
-        if (!$authors) return "There are no stats to output!";
+        $output = "<h3>" . $this->getLang("yearly-contrib") . "</h3>";
+        $data = $this->helpers->readJSON();
+        $authors = $data["authors"];
+        if (!$authors) return $this->getLang("no-stats");
         $totalpm = array();
         $labels = array();
 
         $max_months = 12;
-        if (isset($inopts['years']) && $inopts['years'] > 0) {
-            $max_months = 12 * $inopts['years'];
+        if (isset($inopts["years"]) && $inopts["years"] > 0) {
+            $max_months = 12 * $inopts["years"];
         }
         for ($i = 0; $i <= $max_months; $i++) {
             array_push($totalpm, $this->_getMonthlyContrib($authors, date("Ym", strtotime("-$i months"))));
@@ -137,8 +136,8 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
         }
 
         $totalpm = array_reverse($totalpm);       // For some odd reason the charting tool needs this is the reverse order of the labels...
-        if (isset($inopts['sort'])) {
-            if (preg_match("/^(desc|descending|rev|reverse)$/", $inopts['sort'])) {    // Reverse the sort order from the default
+        if (isset($inopts["sort"])) {
+            if (preg_match("/^(desc|descending|rev|reverse)$/", $inopts["sort"])) {    // Reverse the sort order from the default
                 $totalpm = array_reverse($totalpm);
                 $labels  = array_reverse($labels);
             }
@@ -164,14 +163,14 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
         if (!$this->getConf("enable-pagelist")) {
             return $author[$type];
         }
-        $url = wl("authorstats:" . $name, array('do' => 'authorstats_pages', 'name' => $name, 'type' => $type));
+        $url = wl("authorstats:" . $name, array("do" => "authorstats_pages", "name" => $name, "type" => $type));
         $link = array(
-            'href' => $url,
-            'class' => "wikilink1",
-            'tooltip' => hsc($name),
-            'title' => hsc($author[$type])
+            "href" => $url,
+            "class" => "wikilink1",
+            "tooltip" => hsc($name),
+            "title" => hsc($author[$type])
         );
-        $link = '<a href="' . $link['href'] . '" class="' . $link['class'] . '" title="' . $link['tooltip'] . '" rel="tag">' . $link['title'] . '</a>';
+        $link = "<a href='" . $link["href"] . "' class='" . $link["class"] . "' title='" . $link["tooltip"] . "' rel='tag'>" . $link["title"] . "</a>";
         return $link;
     }
 
@@ -179,29 +178,29 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
     function _getStatsTable()
     {
         $start_time = microtime(true);
-        $output = " <h3>General Statistics</h3><table class=\"authorstats-table\"><tr><th>Name</th><th>Creates</th><th>Edits</th><th>Minor edits</th><th>Deletes</th><th>Reverts</th><th>Contrib</th></tr>";
+        $output = "<h3>" . $this->getLang("gen-stats") . "</h3><table class=\"authorstats-table\"><tr><th>" . $this->getLang("name") . "</th><th>" . $this->getLang("creates") . "</th><th>" . $this->getLang("edits") . "</th><th>" . $this->getLang("minor") . "</th><th>" . $this->getLang("deletes") . "</th><th>" . $this->getLang("reverts") . "</th><th>" . $this->getLang("contrib") . "</th></tr>";
         $authors = $this->helpers->readJSON();
         $authors = $authors["authors"];
-        if (!$authors) return "There are no stats to output!";
-        uasort($authors, array($this, '_sortByContrib'));
+        if (!$authors) return  $this->getLang("no-stats");
+        uasort($authors, array($this, "_sortByContrib"));
         global $auth;
         foreach ($authors as $name => $author) {
             $realname = $auth->getUserData($name);
             if ($realname !== false and $this->getConf("show-realname")) {
                 $dname = $realname["name"];
             } else if ($this->getConf("show-profile-links")) {
-                $dname = userlink($name);
+                $dname = userlink($name, true);
             } else {
                 $dname = "<i>($name)</i>";
             }
 
             $output .= "<tr><th>" .
                 $dname . "</th><td>" .
-                $this->_makeAuthorLink($author, $name, 'C') . "</td><td>" .
-                $this->_makeAuthorLink($author, $name, 'E') . "</td><td>" .
-                $this->_makeAuthorLink($author, $name, 'e') . "</td><td>" .
-                $this->_makeAuthorLink($author, $name, 'D') . "</td><td>" .
-                $this->_makeAuthorLink($author, $name, 'R') . "</td><td>" .
+                $this->_makeAuthorLink($author, $name, "C") . "</td><td>" .
+                $this->_makeAuthorLink($author, $name, "E") . "</td><td>" .
+                $this->_makeAuthorLink($author, $name, "e") . "</td><td>" .
+                $this->_makeAuthorLink($author, $name, "D") . "</td><td>" .
+                $this->_makeAuthorLink($author, $name, "R") . "</td><td>" .
                 strval($this->_getTotalContrib($author)) . "</td></tr>";
         }
         $output .= "</table>";
@@ -215,29 +214,29 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
     // last <$months> months
     function _getMonthlyStatsTable($months)
     {
-        $output = "<h3>Contribution in the last " . $months . " months</h3><table class=\"authorstats-table\"><tr><th>Name</th><th>Contrib</th></tr>";
+        $output = "<h3>" . $this->getLang("contrib-months") . " " . $months . " " . $this->getLang("months") . "</h3><table class=\"authorstats-table\"><tr><th>" . $this->getLang("name") . "</th><th>" . $this->getLang("contrib") . "</th></tr>";
         $authors = $this->helpers->readJSON();
         $authors = $authors["authors"];
-        if (!$authors) return "There are no stats to output!";
+        if (!$authors) return  $this->getLang("no-stats");
         foreach ($authors as $name => $author) {
-            $authors[$name]['lmc'] = $this->_getLastMonthsContrib($author, $months);
+            $authors[$name]["lmc"] = $this->_getLastMonthsContrib($author, $months);
         }
-        uasort($authors, array($this, '_sortByLastMonthsContrib'));
+        uasort($authors, array($this, "_sortByLastMonthsContrib"));
         global $auth;
         foreach ($authors as $name => $author) {
-            if ($authors[$name]['lmc'] > 0) {
+            if ($authors[$name]["lmc"] > 0) {
                 $realname = $auth->getUserData($name);
                 if ($realname !== false and $this->getConf("show-realname")) {
                     $dname = $realname["name"];
                 } else if ($this->getConf("show-profile-links")) {
-                    $dname = userlink($name);
+                    $dname = userlink($name, true);
                 } else {
                     $dname = "<i>($name)</i>";
                 }
 
                 $output .= "<tr><th>" .
                     $dname . "</th><td>" .
-                    strval($authors[$name]['lmc']) . "</td></tr>";
+                    strval($authors[$name]["lmc"]) . "</td></tr>";
             }
         }
         $output .= "</table>";

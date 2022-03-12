@@ -13,36 +13,40 @@ class helper_plugin_authorstats extends DokuWiki_Plugin
     // Read the saved statistics from the JSON file
     public function readJSON()
     {
-        $json = new JSON(JSON_LOOSE_TYPE);
+        // $json = new JSON(JSON_LOOSE_TYPE);
         $file = @file_get_contents(DOKU_PLUGIN . "authorstats/data/authorstats.json");
         if (!$file) return array();
-        return $json->decode($file);
+        // return $json->decode($file);
+        return json_decode($file, true);
     }
 
     // Save the statistics into the JSON file
     public function saveJSON($authors)
     {
         $this->createDirIfMissing("data");
-        $json = new JSON();
-        $json = $json->encode($authors);
+        // $json = new JSON();
+        // $json = $json->encode($authors);
+        $json = json_encode($authors, true);
         file_put_contents(DOKU_PLUGIN . "authorstats/data/authorstats.json", $json);
     }
 
     // Read the saved statistics for user from the JSON file
     public function readUserJSON($loginname)
     {
-        $json = new JSON(JSON_LOOSE_TYPE);
-        $file = @file_get_contents(DOKU_PLUGIN . "authorstats/data/" . $loginname . ".json");
-        if (!$file) return array();
-        return $json->decode($file);
+        // $json = new JSON(JSON_LOOSE_TYPE);
+        $file_contents = @file_get_contents(DOKU_PLUGIN . "authorstats/data/" . $loginname . ".json");
+        if (!$file_contents) return array();
+        // return $json->decode($file);
+        return json_decode($file_contents, true);
     }
 
     // Save the statistics of user into the JSON file
     public function saveUserJSON($loginname, $pages)
     {
         $this->createDirIfMissing("data");
-        $json = new JSON();
-        $json = $json->encode($pages);
+        // $json = new JSON();
+        // $json = $json->encode($pages);
+        $json = json_encode($pages, true);
         file_put_contents(DOKU_PLUGIN . "authorstats/data/" . $loginname . ".json", $json);
     }
 
@@ -58,7 +62,7 @@ class helper_plugin_authorstats extends DokuWiki_Plugin
     public function rglob($pattern, $flags = 0)
     {
         $files = glob($pattern, $flags);
-        foreach (glob(dirname($pattern) . '/*', GLOB_ONLYDIR | GLOB_NOSORT) as $dir) {
+        foreach (glob(dirname($pattern) . "/*", GLOB_ONLYDIR | GLOB_NOSORT) as $dir) {
             $files = array_merge(
                 [],
                 ...[$files, $this->rglob($dir . "/" . basename($pattern), $flags)]
