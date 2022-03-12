@@ -89,7 +89,8 @@ class action_plugin_authorstats extends DokuWiki_Action_Plugin
 
     function _initializeData()
     {
-        $start_time = microtime(true);
+        global $conf;
+        if ($conf['allowdebug']) $start_time = microtime(true);
         global $conf;
         $dir = $conf["metadir"] . "/";
 
@@ -103,16 +104,19 @@ class action_plugin_authorstats extends DokuWiki_Action_Plugin
         foreach ($files as $file) {
             $this->_updateStats($file, $sd, $lastchange, false);
         }
-        $end_time = microtime(true);
-        $execution_time = ($end_time - $start_time);
-        dbglog($execution_time, "Initialize Time");
+        if ($conf['allowdebug']) {
+            $end_time = microtime(true);
+            $execution_time = ($end_time - $start_time);
+            dbglog(__FUNCTION__ . " time:" . $execution_time, "AUTHORSTATS PLUGIN");
+        }
     }
 
     // Updates the saved statistics by checking the last lines
     // in the /data/meta/ directory
     function _updateSavedStats(Doku_Event $event)
     {
-        $start_time = microtime(true);
+        global $conf;
+        if ($conf['allowdebug']) $start_time = microtime(true);
 
         // Read saved data from JSON file
         $sd = $this->helpers->readJSON();
@@ -120,9 +124,11 @@ class action_plugin_authorstats extends DokuWiki_Action_Plugin
         $lastchange = empty($sd) ?  (-1 * PHP_INT_MAX) - 1 : (int) $sd["lastchange"];
         $file = $this->_getChangesFileForPage($event->data["id"]);
         $this->_updateStats($file, $sd, $lastchange);
-        $end_time = microtime(true);
-        $execution_time = ($end_time - $start_time);
-        dbglog($execution_time, "Save Stats Time");
+        if ($conf['allowdebug']) {
+            $end_time = microtime(true);
+            $execution_time = ($end_time - $start_time);
+            dbglog(__FUNCTION__ . " time:" . $execution_time, "AUTHORSTATS PLUGIN");
+        }
     }
 
     // If the page is no more recent than the modification of the json file, refresh the page.

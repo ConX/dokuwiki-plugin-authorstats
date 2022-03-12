@@ -18,9 +18,6 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
 {
     var $helpers = null;
 
-    /**
-     * Constructor. Load helper plugin
-     */
     public function __construct()
     {
         $this->helpers = $this->loadHelper("authorstats", true);
@@ -119,6 +116,8 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
 
     function getYearGraph($inopts)
     {
+        global $conf;
+        if ($conf['allowdebug']) $start_time = microtime(true);
         $output = "<h3>" . $this->getLang("yearly-contrib") . "</h3>";
         $data = $this->helpers->readJSON();
         $authors = $data["authors"];
@@ -155,6 +154,11 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
         $url .= "&chxp=1,2,3,4,5,6,7,8,9,10,11,12|1,50|3,50";                              // Axis label positions
         $url .= "&chxl=0:|" . implode("|", $labels) . "|1:|Yr-Mon|3:|Num_of_Contributions";  // Axis labels
         $url .= "&chd=t:" . implode(",", $totalpm);                                           // Chart data string
+        if ($conf['allowdebug']) {
+            $end_time = microtime(true);
+            $execution_time = ($end_time - $start_time);
+            dbglog(__FUNCTION__ . " time:" . $execution_time, "AUTHORSTATS PLUGIN");
+        }
         return $output . "<img src=\"" . $url . "\">";
     }
 
@@ -177,7 +181,8 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
     // Returns the HTML table with the authors and their stats
     function _getStatsTable()
     {
-        $start_time = microtime(true);
+        global $conf;
+        if ($conf['allowdebug']) $start_time = microtime(true);
         $output = "<h3>" . $this->getLang("gen-stats") . "</h3><table class=\"authorstats-table\"><tr><th>" . $this->getLang("name") . "</th><th>" . $this->getLang("creates") . "</th><th>" . $this->getLang("edits") . "</th><th>" . $this->getLang("minor") . "</th><th>" . $this->getLang("deletes") . "</th><th>" . $this->getLang("reverts") . "</th><th>" . $this->getLang("contrib") . "</th></tr>";
         $authors = $this->helpers->readJSON();
         $authors = $authors["authors"];
@@ -204,9 +209,11 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
                 strval($this->_getTotalContrib($author)) . "</td></tr>";
         }
         $output .= "</table>";
-        $end_time = microtime(true);
-        $execution_time = ($end_time - $start_time);
-        dbglog($execution_time, "Get stats table");
+        if ($conf['allowdebug']) {
+            $end_time = microtime(true);
+            $execution_time = ($end_time - $start_time);
+            dbglog(__FUNCTION__ . " time:" . $execution_time, "AUTHORSTATS PLUGIN");
+        }
         return $output;
     }
 
@@ -214,6 +221,8 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
     // last <$months> months
     function _getMonthlyStatsTable($months)
     {
+        global $conf;
+        if ($conf['allowdebug']) $start_time = microtime(true);
         $output = "<h3>" . $this->getLang("contrib-months") . " " . $months . " " . $this->getLang("months") . "</h3><table class=\"authorstats-table\"><tr><th>" . $this->getLang("name") . "</th><th>" . $this->getLang("contrib") . "</th></tr>";
         $authors = $this->helpers->readJSON();
         $authors = $authors["authors"];
@@ -240,6 +249,11 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
             }
         }
         $output .= "</table>";
+        if ($conf['allowdebug']) {
+            $end_time = microtime(true);
+            $execution_time = ($end_time - $start_time);
+            dbglog(__FUNCTION__ . " time:" . $execution_time, "AUTHORSTATS PLUGIN");
+        }
         return $output;
     }
 }
