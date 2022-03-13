@@ -30,7 +30,7 @@ class action_plugin_authorstats extends DokuWiki_Action_Plugin
 
     function register(Doku_Event_Handler $controller)
     {
-        $controller->register_hook("COMMON_WIKIPAGE_SAVE", "BEFORE", $this, "_updateSavedStats");
+        $controller->register_hook("ACTION_SHOW_REDIRECT", "BEFORE", $this, "_updateSavedStats");
         $controller->register_hook("PARSER_CACHE_USE", "BEFORE", $this, "_cachePrepare");
         $controller->register_hook("ACTION_ACT_PREPROCESS", "BEFORE",  $this, "_allow_show_author_pages");
         $controller->register_hook("TPL_ACT_UNKNOWN", "BEFORE",  $this, "_show_author_pages");
@@ -179,7 +179,13 @@ class action_plugin_authorstats extends DokuWiki_Action_Plugin
         global $conf;
         $metadir = $conf["metadir"] . "/";
         $newlast = $lastchange;
-        $file_contents = array_reverse(file($change_file));
+        if (is_readable($change_file))
+            $file_contents = array_reverse(file($change_file));
+        else {
+            dbglog("ERROR: " . __FUNCTION__ . " - Couldn't open file:" . var_export($change_file, true), "AUTHORSTATS PLUGIN");
+            return;
+        }
+
         foreach ($file_contents as $line) {
             $r = $this->_parseChange($line);
 
