@@ -248,6 +248,7 @@ class syntax_plugin_authorstats extends DokuWiki_Syntax_Plugin
         if ($user !== false and $this->getConf("show-realname")) {
             $dname = $user["name"];
         } else if ($this->getConf("show-profile-links")) {
+            $dname = userlink($name);
         } else if ($user !== false) {
             $dname = $name;
         } else {
