@@ -60,7 +60,13 @@ class action_plugin_authorstats extends DokuWiki_Action_Plugin
         $pagelist->startList();
         foreach ($ids as $key => $value) {
             $page = array("id" => urldecode($key));
-            $pagelist->addPage($page);
+            $add = true;
+            if ($_REQUEST["type"] === "C" && !page_exists(urldecode($key)) && $this->getConf("ignore-wanted-pages")) {
+                $add = false;
+            }
+            if($add) {
+                $pagelist->addPage($page);
+            }
         }
         $type = "";
         switch ($_REQUEST["type"]) {
